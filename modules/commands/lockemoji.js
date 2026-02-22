@@ -3,7 +3,7 @@ const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "lockemoji",
-    version: "1.0.2",
+    version: "1.0.3",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group emoji",
@@ -18,10 +18,10 @@ module.exports.onLoad = function () {
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, author, type } = event;
+    const { threadID, logMessageType, author, logMessageData, type } = event;
     const emojiEvents = ["log:thread-icon", "log:thread-emoji", "log:thread-icon-emoji", "change_thread_icon"];
     
-    if (!emojiEvents.includes(logMessageType) && type !== "change_thread_icon") return;
+    if (!emojiEvents.includes(logMessageType) && type !== "change_thread_icon" && event.type !== "change_thread_icon") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -32,14 +32,8 @@ module.exports.handleEvent = async function ({ api, event }) {
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
                 console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
-                const callback = (err) => {
-                    if (err) console.log("Error reverting emoji:", err);
-                };
-
                 if (typeof api.changeThreadEmoji === "function") {
-                    await api.changeThreadEmoji(savedEmoji, threadID, callback);
-                } else if (typeof api.setThreadEmoji === "function") {
-                    await api.setThreadEmoji(savedEmoji, threadID, callback);
+                    await api.changeThreadEmoji(savedEmoji, threadID);
                 }
             }
         }
