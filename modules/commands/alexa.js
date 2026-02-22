@@ -53,13 +53,14 @@ async function chatWithAlexa(api, event, query) {
   const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi, Pakistan se ho. Tum ek Muslim ladki ho. Tum hamesha Roman Urdu mein baat karti ho. Tum Karachi ki slang thodi si use karti ho. Tumhare jawab hamesha short aur crispy hote hain. Kabhi lambay jawab mat dena.";
   
   try {
-    const aiRes = await axios.get(`https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(systemPrompt)}`);
+    // Check if API is reachable
+    const aiRes = await axios.get(`https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(systemPrompt)}`, { timeout: 15000 });
     
     if (aiRes.data.status && aiRes.data.response) {
       const aiText = aiRes.data.response;
       
       // Convert text to speech
-      const ttsRes = await axios.get(`https://api.kraza.qzz.io/tools/text-to-speech?text=${encodeURIComponent(aiText)}`);
+      const ttsRes = await axios.get(`https://api.kraza.qzz.io/tools/text-to-speech?text=${encodeURIComponent(aiText)}`, { timeout: 15000 });
       
       if (ttsRes.data.status && ttsRes.data.result) {
         // Find a female voice (Ana or Nahida)
@@ -69,17 +70,19 @@ async function chatWithAlexa(api, event, query) {
         if (audioUrl) {
           const cacheDir = path.join(__dirname, "cache");
           if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
-          const audioPath = path.join(cacheDir, `alexa_${Date.now()}.mp3`);
+          const fileName = `alexa_${Date.now()}.mp3`;
+          const audioPath = path.join(cacheDir, fileName);
           
           const audioDownload = await axios.get(audioUrl, { responseType: 'arraybuffer' });
           await fs.writeFile(audioPath, Buffer.from(audioDownload.data));
           
-          // Re-verify file and extension before sending
+          // Verify file and extension before sending
           if (fs.existsSync(audioPath)) {
             return api.sendMessage({
               body: aiText,
               attachment: fs.createReadStream(audioPath)
-            }, threadID, () => {
+            }, threadID, (err) => {
+              if (err) console.error("Error sending Alexa voice:", err);
               setTimeout(() => {
                 if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
               }, 5000);
@@ -91,6 +94,9 @@ async function chatWithAlexa(api, event, query) {
       return api.sendMessage(aiText, threadID, messageID);
     }
   } catch (error) {
-    console.error("Alexa AI Error:", error);
+    console.error("Alexa AI Error:", error.message);
+    if (error.code === 'EAI_AGAIN') {
+       return api.sendMessage("⚠️ API Server is temporarily unavailable. Please try again in a few seconds.", threadID, messageID);
+    }
   }
 }
