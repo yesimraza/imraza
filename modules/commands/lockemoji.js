@@ -23,10 +23,15 @@ module.exports.handleEvent = async function ({ api, event }) {
     
     // Debug log to see events
     if (logMessageType || type === "change_thread_icon") {
-        console.log(`[ DEBUG ] lockemoji event: type=${type}, logMessageType=${logMessageType}, author=${author}`);
+        console.log(`[ DEBUG ] lockemoji event: type=${type}, logMessageType=${logMessageType}, author=${author}, logMessageData=${JSON.stringify(logMessageData)}`);
     }
 
-    if (!emojiEvents.includes(logMessageType) && type !== "change_thread_icon" && event.type !== "change_thread_icon") return;
+    const isEmojiChange = emojiEvents.includes(logMessageType) || 
+                         type === "change_thread_icon" || 
+                         event.type === "change_thread_icon" ||
+                         (logMessageType === "log:thread-color" && logMessageData && logMessageData.theme_emoji);
+
+    if (!isEmojiChange) return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -36,6 +41,7 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
+                // If it's a theme change that also changes emoji, we might need a small delay or check
                 console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
                 // Ensure the function exists and use it
                 if (typeof api.changeThreadEmoji === "function") {

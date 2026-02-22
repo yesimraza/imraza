@@ -23,7 +23,7 @@ module.exports.handleEvent = async function ({ api, event }) {
     
     // Debug log to see events
     if (logMessageType || type === "change_thread_color") {
-        console.log(`[ DEBUG ] locktheme event: type=${type}, logMessageType=${logMessageType}, author=${author}`);
+        console.log(`[ DEBUG ] locktheme event: type=${type}, logMessageType=${logMessageType}, author=${author}, logMessageData=${JSON.stringify(logMessageData)}`);
     }
 
     if (!themeEvents.includes(logMessageType) && type !== "change_thread_color" && event.type !== "change_thread_color") return;
@@ -34,12 +34,19 @@ module.exports.handleEvent = async function ({ api, event }) {
             const botID = api.getCurrentUserID();
             if (String(author) === String(botID)) return;
 
-            const savedTheme = lockStatus[threadID].themeValue;
+            let savedTheme = lockStatus[threadID].themeValue;
             if (savedTheme) {
+                // Fix: ensure the theme ID is a string and handle the '000000' vs '0' case
+                if (savedTheme === "000000") savedTheme = "0"; 
+                
+                // If it's a log:thread-color event, the new theme ID is in logMessageData.theme_id
+                const newThemeID = logMessageData?.theme_id || logMessageData?.thread_theme_id;
+                if (newThemeID && String(newThemeID) === String(savedTheme)) return;
+
                 console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${savedTheme}`);
                 // Using changeThreadColor which is the standard in this FCA
                 if (typeof api.changeThreadColor === "function") {
-                    await api.changeThreadColor(savedTheme, threadID);
+                    await api.changeThreadColor(String(savedTheme), threadID);
                 } else {
                     console.error("[ LOCK THEME ] api.changeThreadColor is not a function!");
                 }
@@ -61,8 +68,11 @@ module.exports.run = async function ({ api, event, args }) {
         try {
             const threadInfo = await api.getThreadInfo(threadID);
             // threadTheme object often has the ID we need
-            const themeID = (threadInfo.threadTheme && threadInfo.threadTheme.id) || threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "0";
+            let themeID = (threadInfo.threadTheme && threadInfo.threadTheme.id) || threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "0";
             
+            // Normalize themeID
+            if (themeID === "000000") themeID = "0";
+
             lockStatus[threadID].theme = true;
             lockStatus[threadID].themeValue = String(themeID);
             fs.writeJsonSync(path, lockStatus);

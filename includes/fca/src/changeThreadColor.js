@@ -21,10 +21,15 @@ module.exports = function (defaultFuncs, api, ctx) {
 
     var validatedColor = color !== null ? color.toLowerCase() : color; // API only accepts lowercase letters in hex string
     console.log(`[ DEBUG ] changeThreadColor called with color: ${validatedColor}, threadID: ${threadID}`);
+    
+    // If color is a numeric theme ID, we should skip the colorList validation or find a way to validate it
+    var isNumeric = /^\d+$/.test(String(validatedColor));
+    
     var colorList = Object.keys(api.threadColors).map(function (name) {
       return api.threadColors[name];
     });
-    if (!colorList.includes(validatedColor)) throw { error: "The color you are trying to use is not a valid thread color. Use api.threadColors to find acceptable values." };
+
+    if (!isNumeric && !colorList.includes(validatedColor)) throw { error: "The color you are trying to use is not a valid thread color. Use api.threadColors to find acceptable values." };
 
     var form = {
       dpr: 1,
