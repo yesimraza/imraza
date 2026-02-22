@@ -18,43 +18,42 @@ module.exports.handleEvent = async function ({ api, event }) {
   if (!body) return;
 
   const capcutRegex = /https?:\/\/(www\.)?capcut\.com\/template-detail\/\d+/;
-  const fbRegex = /https?:\/\/(www\.)?facebook\.com\/(share|reel|watch|groups|story)\//;
+  const fbRegex = /https?:\/\/(www\.)?(facebook\.com|fb\.watch|facebook\.com\/reel)\//;
   const instaRegex = /https?:\/\/(www\.)?instagram\.com\/(p|reel|tv|stories)\//;
   const pinRegex = /https?:\/\/(pin\.it\/|www\.pinterest\.com\/pin\/)/;
-  const tiktokRegex = /https?:\/\/(vm\.tiktok\.com\/|www\.tiktok\.com\/)/;
-  const ytRegex = /https?:\/\/(youtu\.be\/|www\.youtube\.com\/watch\?v=)/;
+  const tiktokRegex = /https?:\/\/(vm\.tiktok\.com\/|www\.tiktok\.com\/|vt\.tiktok\.com\/)/;
+  const ytRegex = /https?:\/\/(youtu\.be\/|www\.youtube\.com\/watch\?v=|www\.youtube\.com\/shorts\/)/;
 
   let apiUrl = "";
   let downloadFunc = null;
 
-  if (capcutRegex.test(body)) {
-    const url = body.match(capcutRegex)[0];
+  const urlMatch = body.match(/(https?:\/\/[^\s]+)/);
+  if (!urlMatch) return;
+  const url = urlMatch[0];
+
+  if (capcutRegex.test(url)) {
     apiUrl = `https://api.kraza.qzz.io/download/capcut?url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result.videoUrl;
-  } else if (fbRegex.test(body)) {
-    const url = body.match(fbRegex)[0];
+    downloadFunc = async (res) => res.data.status ? res.data.result.videoUrl : null;
+  } else if (fbRegex.test(url)) {
     apiUrl = `https://api.kraza.qzz.io/download/facebook?url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result.media.video_hd || res.data.result.media.video_sd;
-  } else if (instaRegex.test(body)) {
-    const url = body.match(instaRegex)[0];
+    downloadFunc = async (res) => res.data.status ? (res.data.result.media.video_hd || res.data.result.media.video_sd) : null;
+  } else if (instaRegex.test(url)) {
     apiUrl = `https://api.princetechn.com/api/download/instadl?apikey=prince&url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result.download_url;
-  } else if (pinRegex.test(body)) {
-    const url = body.match(pinRegex)[0];
+    downloadFunc = async (res) => res.data.success ? res.data.result.download_url : null;
+  } else if (pinRegex.test(url)) {
     apiUrl = `https://api.princetechn.com/api/download/pinterestdl?apikey=prince&url=${encodeURIComponent(url)}`;
     downloadFunc = async (res) => {
+        if (!res.data.success) return null;
         const media = res.data.result.media;
         const video = media.find(m => m.format === "MP4" && m.type.includes("720p")) || media.find(m => m.format === "MP4");
         return video ? video.download_url : null;
     };
-  } else if (tiktokRegex.test(body)) {
-    const url = body.match(tiktokRegex)[0];
+  } else if (tiktokRegex.test(url)) {
     apiUrl = `https://api.kraza.qzz.io/download/tiktok?url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result.video_nowm;
-  } else if (ytRegex.test(body)) {
-    const url = body.match(ytRegex)[0];
+    downloadFunc = async (res) => res.data.status ? res.data.result.video_nowm : null;
+  } else if (ytRegex.test(url)) {
     apiUrl = `https://api.kraza.qzz.io/download/ytdl?url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result ? res.data.result.mp4 : null;
+    downloadFunc = async (res) => res.data.status ? res.data.result.mp4 : null;
   }
 
   if (apiUrl && downloadFunc) {
