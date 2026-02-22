@@ -18,7 +18,7 @@ module.exports.run = async function ({ api, event }) {
     const settings = lockStatus[threadID];
     
     // Check for theme change event
-    if (settings && settings.theme && (event.logMessageType === "log:thread-color" || type === "change_thread_color" || event.type === "change_thread_color")) {
+    if (settings && settings.theme && (event.logMessageType === "log:thread-color" || event.logMessageType === "log:thread-theme-id" || event.logMessageType === "log:thread-theme" || type === "change_thread_color" || event.type === "change_thread_color")) {
         console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${settings.themeValue}`);
         if (settings.themeValue) {
             const callback = (err) => {
@@ -40,6 +40,9 @@ module.exports.run = async function ({ api, event }) {
                 }
                 if (typeof api.setTitleEmoji === "function") {
                     api.setTitleEmoji(settings.emojiValue, threadID, callback);
+                }
+                if (typeof api.changeThreadEmoji === "function") {
+                    api.changeThreadEmoji(settings.emojiValue, threadID, callback);
                 }
             }
         }
