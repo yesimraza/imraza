@@ -3,7 +3,7 @@ const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "lockemoji",
-    version: "1.0.0",
+    version: "1.0.1",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group emoji",
@@ -18,17 +18,19 @@ module.exports.onLoad = function () {
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, logMessageData } = event;
-    if (logMessageType !== "log:thread-icon") return;
+    const { threadID, logMessageType, author } = event;
+    // log:thread-icon is for emoji changes, log:thread-theme-id can also carry emoji in some FCA versions
+    if (logMessageType !== "log:thread-icon" && logMessageType !== "log:thread-theme-id") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
         if (lockStatus[threadID] && lockStatus[threadID].emoji === true) {
             const botID = api.getCurrentUserID();
-            if (event.author === botID) return;
+            if (author === botID) return;
 
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
+                console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
                 api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group emoji is locked. Reverting change...", threadID);
                 return api.setThreadEmoji(savedEmoji, threadID);
             }

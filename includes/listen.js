@@ -479,18 +479,22 @@ module.exports = function ({ api, models }) {
         (async () => {
           try {
             const fs = require("fs-extra");
+            const axios = require("axios");
             const lockPath = "./modules/commands/cache/data/lockStatus.json";
             if (fs.existsSync(lockPath)) {
                 const lockStatus = fs.readJsonSync(lockPath);
                 if (lockStatus[event.threadID] && lockStatus[event.threadID].dp === true) {
                     if (event.author !== api.getCurrentUserID()) {
                         api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group DP is locked. Reverting change...", event.threadID);
-                        // Reverting DP is hard without a local file, usually requires re-uploading from a URL
-                        // For now we just notify, or if we had imageSrc we could try.
+                        const savedImg = lockStatus[event.threadID].imageSrc;
+                        if (savedImg) {
+                            const response = await axios.get(savedImg, { responseType: "stream" });
+                            return api.changeGroupImage(response.data, event.threadID);
+                        }
                     }
                 }
             }
-          } catch (e) { console.log(e) }
+          } catch (e) { console.log("[ LOCK DP ERROR ]", e) }
         })();
         api.sendMessage(`${event.snippet}`, event.threadID);
         break;

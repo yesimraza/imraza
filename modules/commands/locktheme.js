@@ -3,7 +3,7 @@ const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "locktheme",
-    version: "1.0.0",
+    version: "1.0.1",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group theme",
@@ -18,19 +18,18 @@ module.exports.onLoad = function () {
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, logMessageData } = event;
+    const { threadID, logMessageType, author } = event;
     if (logMessageType !== "log:thread-color" && logMessageType !== "log:thread-theme-id") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
         if (lockStatus[threadID] && lockStatus[threadID].theme === true) {
             const botID = api.getCurrentUserID();
-            if (event.author === botID) return;
+            if (author === botID) return;
 
             const savedTheme = lockStatus[threadID].themeValue;
-            // Facebook uses different fields for theme/color changes
-            // We'll just set it back to what we have saved
             if (savedTheme) {
+                console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${savedTheme}`);
                 api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group theme is locked. Reverting change...", threadID);
                 return api.setThreadColor(savedTheme, threadID);
             }
@@ -50,6 +49,7 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         const threadInfo = await api.getThreadInfo(threadID);
         lockStatus[threadID].theme = true;
+        // Correctly capture theme ID or color
         lockStatus[threadID].themeValue = threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "default";
         fs.writeJsonSync(path, lockStatus);
         

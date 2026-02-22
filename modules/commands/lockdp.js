@@ -1,9 +1,10 @@
 const fs = require("fs-extra");
+const axios = require("axios");
 const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "lockdp",
-    version: "1.0.0",
+    version: "1.0.1",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group DP",
@@ -17,14 +18,6 @@ module.exports.onLoad = function () {
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, logMessageData } = event;
-    if (logMessageType !== "log:thread-icon" && !event.image) return; // Note: change_thread_image might be message type or event type depending on FCA
-
-    // Group DP changes are tricky to catch as events, usually they are type 'change_thread_image'
-    // But we'll handle it if it comes through handleEvent as log:thread-icon (sometimes used for icons/dp)
-};
-
 module.exports.run = async function ({ api, event, args }) {
     const { threadID, messageID } = event;
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
@@ -33,11 +26,15 @@ module.exports.run = async function ({ api, event, args }) {
     
     const status = args[0]?.toLowerCase();
     if (status === "on") {
-        const threadInfo = await api.getThreadInfo(threadID);
-        lockStatus[threadID].dp = true;
-        lockStatus[threadID].imageSrc = threadInfo.imageSrc;
-        fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock DP enabled!", threadID, messageID);
+        try {
+            const threadInfo = await api.getThreadInfo(threadID);
+            lockStatus[threadID].dp = true;
+            lockStatus[threadID].imageSrc = threadInfo.imageSrc;
+            fs.writeJsonSync(path, lockStatus);
+            return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock DP enabled! I will prevent changes.", threadID, messageID);
+        } catch (e) {
+            return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Error enabling Lock DP: " + e.message, threadID, messageID);
+        }
     } else if (status === "off") {
         lockStatus[threadID].dp = false;
         fs.writeJsonSync(path, lockStatus);
