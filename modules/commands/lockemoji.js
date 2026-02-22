@@ -31,16 +31,20 @@ module.exports.handleEvent = async function ({ api, event }) {
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
                 // If it's a theme change that also resets emoji or just a direct emoji change
-                api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group emoji is locked. Reverting change...", threadID);
                 
                 const callback = (err) => {
                     if (err) console.log("Error reverting emoji:", err);
                 };
 
-                if (typeof api.setThreadEmoji === "function") {
-                    await api.setThreadEmoji(savedEmoji, threadID, callback);
+                if (typeof api.setTitleEmoji === "function") {
+                    await api.setTitleEmoji(savedEmoji, threadID, callback);
                 } else if (typeof api.changeThreadEmoji === "function") {
                     await api.changeThreadEmoji(savedEmoji, threadID, callback);
+                } else if (typeof api.setThreadEmoji === "function") {
+                    await api.setThreadEmoji(savedEmoji, threadID, callback);
+                } else {
+                    // Fallback to direct fca call if needed
+                    api.setThreadEmoji(savedEmoji, threadID, callback);
                 }
             }
         }

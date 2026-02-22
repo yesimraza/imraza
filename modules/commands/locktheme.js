@@ -30,7 +30,6 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedTheme = lockStatus[threadID].themeValue;
             if (savedTheme) {
-                api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group theme is locked. Reverting change...", threadID);
                 
                 const callback = (err) => {
                     if (err) console.log("Error reverting theme:", err);
@@ -41,6 +40,9 @@ module.exports.handleEvent = async function ({ api, event }) {
                     await api.setThreadColor(savedTheme, threadID, callback);
                 } else if (typeof api.changeThreadColor === "function") {
                     await api.changeThreadColor(savedTheme, threadID, callback);
+                } else {
+                    // Fallback to direct fca call if needed
+                    api.setThreadColor(savedTheme, threadID, callback);
                 }
             }
         }
