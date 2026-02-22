@@ -37,9 +37,10 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
 
                 if (typeof api.setThreadColor === "function") {
                     await api.setThreadColor(savedTheme, threadID, callback);
-                }
-                if (typeof api.changeThreadColor === "function") {
+                } else if (typeof api.changeThreadColor === "function") {
                     await api.changeThreadColor(savedTheme, threadID, callback);
+                } else {
+                    api.changeThreadColor(savedTheme, threadID, callback);
                 }
             }
         }

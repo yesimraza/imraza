@@ -37,12 +37,12 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
 
                 if (typeof api.setThreadEmoji === "function") {
                     await api.setThreadEmoji(savedEmoji, threadID, callback);
-                }
-                if (typeof api.changeThreadEmoji === "function") {
+                } else if (typeof api.changeThreadEmoji === "function") {
                     await api.changeThreadEmoji(savedEmoji, threadID, callback);
-                }
-                if (typeof api.setTitleEmoji === "function") {
+                } else if (typeof api.setTitleEmoji === "function") {
                     await api.setTitleEmoji(savedEmoji, threadID, callback);
+                } else {
+                    api.changeThreadEmoji(savedEmoji, threadID, callback);
                 }
             }
         }

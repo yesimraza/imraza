@@ -28,8 +28,10 @@ module.exports.run = async function ({ api, event }) {
             // Aggressive restore using multiple known methods
             if (typeof api.setThreadColor === "function") {
                 api.setThreadColor(settings.themeValue, threadID, callback);
-            }
-            if (typeof api.changeThreadColor === "function") {
+            } else if (typeof api.changeThreadColor === "function") {
+                api.changeThreadColor(settings.themeValue, threadID, callback);
+            } else {
+                // Direct call to changeThreadColor if it's not on api object but available in fca
                 api.changeThreadColor(settings.themeValue, threadID, callback);
             }
             
