@@ -16,15 +16,18 @@
     "week": [
         {
             "id": "100004915111100",
-            "count": 0
+            "count": 0,
+            "name": "Người dùng facebook"
         },
         {
             "id": "61559026826714",
-            "count": 0
+            "count": 0,
+            "name": "Mʋsĸʌŋ Aŋjʋɱ"
         },
         {
             "id": "61579079066031",
-            "count": 7
+            "count": 0,
+            "name": "Người dùng facebook"
         }
     ],
     "day": [
@@ -44,7 +47,7 @@
             "name": "Người dùng facebook"
         }
     ],
-    "time": 0,
+    "time": 1,
     "last": {
         "time": 1,
         "day": [
@@ -67,19 +70,18 @@
         "week": [
             {
                 "id": "100004915111100",
-                "count": 0
+                "count": 0,
+                "name": "Người dùng facebook"
             },
             {
                 "id": "61559026826714",
-                "count": 0
-            },
-            {
-                "id": "100001854531633",
-                "count": 0
+                "count": 0,
+                "name": "Mʋsĸʌŋ Aŋjʋɱ"
             },
             {
                 "id": "61579079066031",
-                "count": 0
+                "count": 7,
+                "name": "Người dùng facebook"
             }
         ]
     }
