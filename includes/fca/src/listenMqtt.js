@@ -83,8 +83,13 @@ function buildStream(options, WebSocket, Proxy) {
 
     WebSocket.onmessage = (event) => {
         clearTimeout(reconnectTimeout);
+        if (Stream.readableEnded || Stream.destroyed) return;
         const data = event.data instanceof ArrayBuffer ? Buffer.from(event.data) : Buffer.from(event.data, 'utf8');
-        Stream.push(data);
+        try {
+            Stream.push(data);
+        } catch (e) {
+            log.error("listenMqtt", "Stream push error: " + e.message);
+        }
     };
 
     WebSocket.onopen = () => {
