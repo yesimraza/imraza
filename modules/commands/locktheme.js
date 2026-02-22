@@ -21,6 +21,11 @@ module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, logMessageType, author, logMessageData, type } = event;
     const themeEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
     
+    // Debug log to see events
+    if (logMessageType || type === "change_thread_color") {
+        console.log(`[ DEBUG ] locktheme event: type=${type}, logMessageType=${logMessageType}, author=${author}`);
+    }
+
     if (!themeEvents.includes(logMessageType) && type !== "change_thread_color" && event.type !== "change_thread_color") return;
 
     try {
@@ -35,11 +40,13 @@ module.exports.handleEvent = async function ({ api, event }) {
                 // Using changeThreadColor which is the standard in this FCA
                 if (typeof api.changeThreadColor === "function") {
                     await api.changeThreadColor(savedTheme, threadID);
+                } else {
+                    console.error("[ LOCK THEME ] api.changeThreadColor is not a function!");
                 }
             }
         }
     } catch (e) {
-        // console.log("Error in locktheme handleEvent:", e);
+        console.log("Error in locktheme handleEvent:", e);
     }
 };
 

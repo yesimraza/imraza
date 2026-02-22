@@ -21,6 +21,11 @@ module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, logMessageType, author, logMessageData, type } = event;
     const emojiEvents = ["log:thread-icon", "log:thread-emoji", "log:thread-icon-emoji", "change_thread_icon"];
     
+    // Debug log to see events
+    if (logMessageType || type === "change_thread_icon") {
+        console.log(`[ DEBUG ] lockemoji event: type=${type}, logMessageType=${logMessageType}, author=${author}`);
+    }
+
     if (!emojiEvents.includes(logMessageType) && type !== "change_thread_icon" && event.type !== "change_thread_icon") return;
 
     try {
@@ -32,13 +37,16 @@ module.exports.handleEvent = async function ({ api, event }) {
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
                 console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
+                // Ensure the function exists and use it
                 if (typeof api.changeThreadEmoji === "function") {
                     await api.changeThreadEmoji(savedEmoji, threadID);
+                } else {
+                    console.error("[ LOCK EMOJI ] api.changeThreadEmoji is not a function!");
                 }
             }
         }
     } catch (e) {
-        // console.log("Error in lockemoji handleEvent:", e);
+        console.log("Error in lockemoji handleEvent:", e);
     }
 };
 

@@ -20,6 +20,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     }
 
     var validatedColor = color !== null ? color.toLowerCase() : color; // API only accepts lowercase letters in hex string
+    console.log(`[ DEBUG ] changeThreadColor called with color: ${validatedColor}, threadID: ${threadID}`);
     var colorList = Object.keys(api.threadColors).map(function (name) {
       return api.threadColors[name];
     });
@@ -48,6 +49,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
+        console.log(`[ DEBUG ] changeThreadColor API response:`, JSON.stringify(resData));
         if (resData[resData.length - 1].error_results > 0) throw resData[0].o0.errors;
 
         return callback();
