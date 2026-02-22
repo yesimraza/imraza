@@ -57,10 +57,8 @@ module.exports.run = async function ({ api, event, args }) {
     let fetchRes;
     try {
       const apiEndpoint = wantVideo ? 'ytmp4' : 'ytmp3';
-      const apiUrl = `https://anabot.my.id/api/download/${apiEndpoint}?url=${encodeURIComponent(videoUrl)}&apikey=freeApikey`;
-      if (wantVideo) {
-        apiUrl += '&quality=360';
-      }
+      const apiUrl = `https://api.kraza.qzz.io/download/${apiEndpoint}?url=${encodeURIComponent(videoUrl)}`;
+      
       fetchRes = await axios.get(apiUrl, {
         headers: {
           'Accept': 'application/json'
@@ -72,12 +70,12 @@ module.exports.run = async function ({ api, event, args }) {
       return api.sendMessage(`❌ Failed to fetch download link: ${fetchError.message}\n\nThe API might be slow or unavailable. Please try again later.`, threadID, messageID);
     }
 
-    if (!fetchRes.data.success || !fetchRes.data.data.result.urls) {
+    if (!fetchRes.data.status || !fetchRes.data.result) {
       api.unsendMessage(loadingMsg.messageID);
       return api.sendMessage("❌ Failed to get download URL", threadID, messageID);
     }
 
-    const downloadUrl = fetchRes.data.data.result.urls;
+    const downloadUrl = fetchRes.data.result;
 
     await api.editMessage(`🎵 Processing...\n\n${frames[3]}`, loadingMsg.messageID, threadID);
 

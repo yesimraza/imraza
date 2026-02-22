@@ -53,17 +53,16 @@ module.exports.run = async function ({ api, event, args }) {
     if (!imageUrl) throw new Error("Image upload to Imgur failed.");
 
     // Call Nano-Banana AI API
-    const apiUrl = `https://nano-bnana.fak-official.workers.dev/image?prompt=${encodeURIComponent(prompt)}&imageUrl=${encodeURIComponent(imageUrl)}`;
+    const apiUrl = `https://api.kraza.qzz.io/imagecreator/nanobanana?imageUrl=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`;
 
-    const response = await axios.get(apiUrl, {
-      responseType: 'arraybuffer',
-      timeout: 120000 // 2 minutes
-    });
+    const response = await axios.get(apiUrl);
 
-    if (!response.data) throw new Error("AI API returned no data.");
+    if (!response.data.status || !response.data.result) throw new Error("AI API returned no data.");
 
+    const resultImageUrl = response.data.result.image;
     const editedPath = path.join(cacheDir, `edited_${Date.now()}.jpg`);
-    await fs.writeFile(editedPath, Buffer.from(response.data));
+    const imageRes = await axios.get(resultImageUrl, { responseType: 'arraybuffer' });
+    await fs.writeFile(editedPath, Buffer.from(imageRes.data));
 
     return api.sendMessage({
       body: `✨ **Image edited successfully!**\n\n📝 **Prompt:** ${prompt}\n🎨 **Powered by Nano-Banana AI**`,

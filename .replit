@@ -14,6 +14,10 @@ author = "agent"
 task = "workflow.run"
 args = "Server Dashboard"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Server Dashboard (Restart)"
+
 [[workflows.workflow]]
 name = "Server Dashboard"
 author = "agent"
@@ -25,6 +29,17 @@ outputType = "webview"
 task = "shell.exec"
 args = "node index.js"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Server Dashboard (Restart)"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [[ports]]
 localPort = 5000
