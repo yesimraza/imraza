@@ -10,8 +10,9 @@ const fs = require("fs-extra");
 const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.run = async function ({ api, event }) {
-    const { threadID, author } = event;
+    const { threadID, author, logMessageType, type } = event;
     if (author == api.getCurrentUserID()) return;
+    if (logMessageType !== "log:thread-icon" && type !== "change_thread_icon") return;
     if (!fs.existsSync(path)) return;
     const lockStatus = fs.readJsonSync(path);
     const settings = lockStatus[threadID];

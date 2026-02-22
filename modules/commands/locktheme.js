@@ -21,7 +21,7 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         const threadInfo = await api.getThreadInfo(threadID);
         lockStatus[threadID].theme = true;
-        lockStatus[threadID].themeValue = threadInfo.threadThemeID || threadInfo.themeID || "default";
+        lockStatus[threadID].themeValue = threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "default";
         fs.writeJsonSync(path, lockStatus);
         
         // Ensure the event handler is aware of the change
