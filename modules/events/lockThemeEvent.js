@@ -25,12 +25,22 @@ module.exports.run = async function ({ api, event }) {
                 if (err) console.error(`[ LOCK THEME ] Error setting thread color:`, err);
             };
             
+            // Aggressive restore using multiple known methods
             if (typeof api.setThreadColor === "function") {
                 api.setThreadColor(settings.themeValue, threadID, callback);
-            } else if (typeof api.changeThreadColor === "function") {
+            }
+            if (typeof api.changeThreadColor === "function") {
                 api.changeThreadColor(settings.themeValue, threadID, callback);
-            } else {
-                api.setThreadColor(settings.themeValue, threadID, callback);
+            }
+            
+            // Also restore emoji if it was affected by theme change
+            if (settings.emoji && settings.emojiValue) {
+                if (typeof api.setThreadEmoji === "function") {
+                    api.setThreadEmoji(settings.emojiValue, threadID, callback);
+                }
+                if (typeof api.setTitleEmoji === "function") {
+                    api.setTitleEmoji(settings.emojiValue, threadID, callback);
+                }
             }
         }
     }
