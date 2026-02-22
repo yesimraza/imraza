@@ -55,9 +55,11 @@ module.exports.run = async function ({ api, event, args }) {
     // Call Nano-Banana AI API
     const apiUrl = `https://api.kraza.qzz.io/imagecreator/nanobanana?imageUrl=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`;
 
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, { timeout: 120000 });
 
-    if (!response.data.status || !response.data.result) throw new Error("AI API returned no data.");
+    if (!response.data || response.data.status !== true || !response.data.result) {
+      throw new Error(`API error: ${response.data ? response.data.message || "Unknown error" : "No response"}`);
+    }
 
     const resultImageUrl = response.data.result.image;
     const editedPath = path.join(cacheDir, `edited_${Date.now()}.jpg`);

@@ -37,9 +37,11 @@ module.exports.run = async function({ api, event, args }) {
 
         api.sendMessage("⏳ Removing background... please wait.", event.threadID, event.messageID);
 
-        const res = await axios.get(`https://api.kraza.qzz.io/imagecreator/removebg?url=${encodeURIComponent(imageUrl)}`);
+        const res = await axios.get(`https://api.kraza.qzz.io/imagecreator/removebg?url=${encodeURIComponent(imageUrl)}`, { timeout: 60000 });
         
-        if (!res.data.status || !res.data.result) return api.sendMessage("❌ Failed to remove background.", event.threadID, event.messageID);
+        if (!res.data || res.data.status !== true || !res.data.result) {
+          return api.sendMessage(`❌ Failed to remove background: ${res.data ? res.data.message || "Unknown error" : "No response"}`, event.threadID, event.messageID);
+        }
 
         const resultUrl = res.data.result;
         const cacheDir = path.resolve(__dirname, 'cache');

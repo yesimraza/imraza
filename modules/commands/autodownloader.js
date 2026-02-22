@@ -53,8 +53,8 @@ module.exports.handleEvent = async function ({ api, event }) {
     downloadFunc = async (res) => res.data.result.video_nowm;
   } else if (ytRegex.test(body)) {
     const url = body.match(ytRegex)[0];
-    apiUrl = `https://api.kraza.qzz.io/download/ytmp4?url=${encodeURIComponent(url)}`;
-    downloadFunc = async (res) => res.data.result;
+    apiUrl = `https://api.kraza.qzz.io/download/ytdl?url=${encodeURIComponent(url)}`;
+    downloadFunc = async (res) => res.data.result ? res.data.result.mp4 : null;
   }
 
   if (apiUrl && downloadFunc) {

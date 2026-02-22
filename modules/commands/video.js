@@ -57,7 +57,7 @@ module.exports.run = async function ({ api, event, args }) {
         // Fetch download URL using new API
         let fetchRes;
         try {
-            const apiUrl = `https://api.kraza.qzz.io/download/ytmp4?url=${encodeURIComponent(videoUrl)}`;
+            const apiUrl = `https://api.kraza.qzz.io/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
             fetchRes = await axios.get(apiUrl, {
                 headers: {
                     'Accept': 'application/json'
@@ -66,15 +66,15 @@ module.exports.run = async function ({ api, event, args }) {
             });
         } catch (fetchError) {
             api.unsendMessage(searchMsg.messageID);
-            return api.sendMessage(`❌ Failed to fetch download link: ${fetchError.message}\n\nThe API might be slow or unavailable. Please try again later.`, event.threadID, event.messageID);
+            return api.sendMessage(`❌ Failed to fetch download link: ${fetchError.message}`, event.threadID, event.messageID);
         }
 
-        if (!fetchRes.data.status || !fetchRes.data.result) {
+        if (!fetchRes.data.status || !fetchRes.data.result || !fetchRes.data.result.mp4) {
             api.unsendMessage(searchMsg.messageID);
-            return api.sendMessage("❌ Failed to get download URL", event.threadID, event.messageID);
+            return api.sendMessage("❌ Failed to get video download URL", event.threadID, event.messageID);
         }
 
-        const downloadUrl = fetchRes.data.result;
+        const downloadUrl = fetchRes.data.result.mp4;
 
         await api.editMessage(`🎬 Processing...\n\n${frames[3]}`, searchMsg.messageID, event.threadID);
 
