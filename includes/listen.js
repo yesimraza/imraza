@@ -465,8 +465,6 @@ module.exports = function ({ api, models }) {
       }
     }, 1000 * 10);
 
-    if (event.type === "change_thread_image")
-      api.sendMessage(`${event.snippet}`, event.threadID);
     switch (event.type) {
       case "message":
       case "message_reply":
@@ -475,6 +473,26 @@ module.exports = function ({ api, models }) {
         handleCommand({ event });
         handleReply({ event });
         handleCommandEvent({ event });
+        break;
+      case "change_thread_image":
+        // Handle lockdp
+        (async () => {
+          try {
+            const fs = require("fs-extra");
+            const lockPath = "./modules/commands/cache/data/lockStatus.json";
+            if (fs.existsSync(lockPath)) {
+                const lockStatus = fs.readJsonSync(lockPath);
+                if (lockStatus[event.threadID] && lockStatus[event.threadID].dp === true) {
+                    if (event.author !== api.getCurrentUserID()) {
+                        api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group DP is locked. Reverting change...", event.threadID);
+                        // Reverting DP is hard without a local file, usually requires re-uploading from a URL
+                        // For now we just notify, or if we had imageSrc we could try.
+                    }
+                }
+            }
+          } catch (e) { console.log(e) }
+        })();
+        api.sendMessage(`${event.snippet}`, event.threadID);
         break;
       case "event":
         handleEvent({ event });
