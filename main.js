@@ -2,7 +2,9 @@
 //========= Require all variable need use =========//
 /////////////////////////////////////////////////////
 const moment = require("moment-timezone");
-const { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, rm } = require("fs-extra");
+const fs = require("fs-extra");
+const fsNative = require("fs");
+const { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, rm } = fs;
 const { join, resolve } = require("path");
 const chalk = require('chalk');
 const figlet = require('figlet');
@@ -85,7 +87,7 @@ try {
     configValue = require(global.client.configPath);
     
     // Watch for config changes
-    fs.watchFile(global.client.configPath, (curr, prev) => {
+    fsNative.watchFile(global.client.configPath, (curr, prev) => {
         try {
             const newData = JSON.parse(readFileSync(global.client.configPath, 'utf8'));
             for (const key in newData) {
