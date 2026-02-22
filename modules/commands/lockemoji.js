@@ -29,7 +29,8 @@ module.exports.handleEvent = async function ({ api, event }) {
     const isEmojiChange = emojiEvents.includes(logMessageType) || 
                          type === "change_thread_icon" || 
                          event.type === "change_thread_icon" ||
-                         (logMessageType === "log:thread-color" && logMessageData && logMessageData.theme_emoji);
+                         logMessageType === "log:thread-color" || 
+                         logMessageType === "log:thread-theme";
 
     if (!isEmojiChange) return;
 

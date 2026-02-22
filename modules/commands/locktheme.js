@@ -22,11 +22,16 @@ module.exports.handleEvent = async function ({ api, event }) {
     const themeEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
     
     // Debug log to see events
-    if (logMessageType || type === "change_thread_color") {
+    if (logMessageType === "log:thread-color" || logMessageType === "log:thread-theme" || type === "change_thread_color") {
         console.log(`[ DEBUG ] locktheme event: type=${type}, logMessageType=${logMessageType}, author=${author}, logMessageData=${JSON.stringify(logMessageData)}`);
     }
 
-    if (!themeEvents.includes(logMessageType) && type !== "change_thread_color" && event.type !== "change_thread_color") return;
+    const isThemeChange = themeEvents.includes(logMessageType) || 
+                         logMessageType === "log:thread-theme" ||
+                         type === "change_thread_color" || 
+                         event.type === "change_thread_color";
+
+    if (!isThemeChange) return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
