@@ -17,10 +17,10 @@ module.exports.onLoad = function () {
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, author, logMessageData } = event;
-    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji", "log:thread-color"];
-    if (!validEvents.includes(logMessageType)) return;
+module.exports.handleEvent = async function ({ api, event, Threads }) {
+    const { threadID, logMessageType, author, logMessageData, type } = event;
+    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji", "log:thread-color", "change_thread_icon"];
+    if (!validEvents.includes(logMessageType) && type !== "change_thread_icon" && event.type !== "change_thread_icon") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -30,21 +30,19 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
-                // If it's a theme change that also resets emoji or just a direct emoji change
-                
+                console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
                 const callback = (err) => {
                     if (err) console.log("Error reverting emoji:", err);
                 };
 
+                if (typeof api.setThreadEmoji === "function") {
+                    await api.setThreadEmoji(savedEmoji, threadID, callback);
+                }
+                if (typeof api.changeThreadEmoji === "function") {
+                    await api.changeThreadEmoji(savedEmoji, threadID, callback);
+                }
                 if (typeof api.setTitleEmoji === "function") {
                     await api.setTitleEmoji(savedEmoji, threadID, callback);
-                } else if (typeof api.changeThreadEmoji === "function") {
-                    await api.changeThreadEmoji(savedEmoji, threadID, callback);
-                } else if (typeof api.setThreadEmoji === "function") {
-                    await api.setThreadEmoji(savedEmoji, threadID, callback);
-                } else {
-                    // Fallback to direct fca call if needed
-                    api.setThreadEmoji(savedEmoji, threadID, callback);
                 }
             }
         }

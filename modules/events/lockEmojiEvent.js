@@ -18,12 +18,15 @@ module.exports.run = async function ({ api, event }) {
     const settings = lockStatus[threadID];
     
     // Check for emoji change event
-    if (settings && settings.emoji && (event.logMessageType === "log:thread-icon" || type === "change_thread_icon" || event.type === "change_thread_icon")) {
+    if (settings && settings.emoji && (event.logMessageType === "log:thread-icon" || event.logMessageType === "log:thread-emoji" || type === "change_thread_icon" || event.type === "change_thread_icon")) {
         console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${settings.emojiValue}`);
         if (settings.emojiValue) {
-            api.setEmoji(settings.emojiValue, threadID, (err) => {
+            const callback = (err) => {
                 if (err) console.error(`[ LOCK EMOJI ] Error setting emoji:`, err);
-            });
+            };
+            if (typeof api.setThreadEmoji === "function") api.setThreadEmoji(settings.emojiValue, threadID, callback);
+            if (typeof api.changeThreadEmoji === "function") api.changeThreadEmoji(settings.emojiValue, threadID, callback);
+            if (typeof api.setTitleEmoji === "function") api.setTitleEmoji(settings.emojiValue, threadID, callback);
         }
     }
 };

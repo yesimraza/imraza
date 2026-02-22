@@ -17,10 +17,10 @@ module.exports.onLoad = function () {
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, author, logMessageData } = event;
-    const validEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color"];
-    if (!validEvents.includes(logMessageType)) return;
+module.exports.handleEvent = async function ({ api, event, Threads }) {
+    const { threadID, logMessageType, author, logMessageData, type } = event;
+    const validEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
+    if (!validEvents.includes(logMessageType) && type !== "change_thread_color" && event.type !== "change_thread_color") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -30,19 +30,16 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedTheme = lockStatus[threadID].themeValue;
             if (savedTheme) {
-                
+                console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${savedTheme}`);
                 const callback = (err) => {
                     if (err) console.log("Error reverting theme:", err);
                 };
 
-                // Check for both possible function names and use await if needed
                 if (typeof api.setThreadColor === "function") {
                     await api.setThreadColor(savedTheme, threadID, callback);
-                } else if (typeof api.changeThreadColor === "function") {
+                }
+                if (typeof api.changeThreadColor === "function") {
                     await api.changeThreadColor(savedTheme, threadID, callback);
-                } else {
-                    // Fallback to direct fca call if needed
-                    api.setThreadColor(savedTheme, threadID, callback);
                 }
             }
         }
