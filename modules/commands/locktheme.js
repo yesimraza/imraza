@@ -30,18 +30,17 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedTheme = lockStatus[threadID].themeValue;
             if (savedTheme) {
-                // Determine what to revert to. If logMessageData has the new theme, we compare.
-                // But generally, we just revert.
                 api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group theme is locked. Reverting change...", threadID);
                 
                 const callback = (err) => {
                     if (err) console.log("Error reverting theme:", err);
                 };
 
+                // Check for both possible function names and use await if needed
                 if (typeof api.setThreadColor === "function") {
-                    return api.setThreadColor(savedTheme, threadID, callback);
+                    await api.setThreadColor(savedTheme, threadID, callback);
                 } else if (typeof api.changeThreadColor === "function") {
-                    return api.changeThreadColor(savedTheme, threadID, callback);
+                    await api.changeThreadColor(savedTheme, threadID, callback);
                 }
             }
         }

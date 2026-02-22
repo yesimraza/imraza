@@ -19,7 +19,7 @@ module.exports.onLoad = function () {
 
 module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, logMessageType, author, logMessageData } = event;
-    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji"];
+    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji", "log:thread-color"];
     if (!validEvents.includes(logMessageType)) return;
 
     try {
@@ -30,6 +30,7 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
+                // If it's a theme change that also resets emoji or just a direct emoji change
                 api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group emoji is locked. Reverting change...", threadID);
                 
                 const callback = (err) => {
@@ -37,9 +38,9 @@ module.exports.handleEvent = async function ({ api, event }) {
                 };
 
                 if (typeof api.setThreadEmoji === "function") {
-                    return api.setThreadEmoji(savedEmoji, threadID, callback);
+                    await api.setThreadEmoji(savedEmoji, threadID, callback);
                 } else if (typeof api.changeThreadEmoji === "function") {
-                    return api.changeThreadEmoji(savedEmoji, threadID, callback);
+                    await api.changeThreadEmoji(savedEmoji, threadID, callback);
                 }
             }
         }
