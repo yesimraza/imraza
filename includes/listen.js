@@ -484,12 +484,16 @@ module.exports = function ({ api, models }) {
             if (fs.existsSync(lockPath)) {
                 const lockStatus = fs.readJsonSync(lockPath);
                 if (lockStatus[event.threadID] && lockStatus[event.threadID].dp === true) {
-                    if (event.author !== api.getCurrentUserID()) {
-                        api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group DP is locked. Reverting change...", event.threadID);
+                    if (String(event.author) !== String(api.getCurrentUserID())) {
                         const savedImg = lockStatus[event.threadID].imageSrc;
                         if (savedImg) {
+                            api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group DP is locked. Reverting change...", event.threadID);
                             const response = await axios.get(savedImg, { responseType: "stream" });
-                            return api.changeGroupImage(response.data, event.threadID);
+                            if (typeof api.setThreadImage === "function") {
+                                return api.setThreadImage(response.data, event.threadID);
+                            } else if (typeof api.changeGroupImage === "function") {
+                                return api.changeGroupImage(response.data, event.threadID);
+                            }
                         }
                     }
                 }
@@ -501,6 +505,7 @@ module.exports = function ({ api, models }) {
       case "event":
         handleEvent({ event });
         handleRefresh({ event });
+        break;
         
         // Handle antinamebox event specifically for thread name changes
         if (event.logMessageType === "log:thread-name") {

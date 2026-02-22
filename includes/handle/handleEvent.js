@@ -12,20 +12,57 @@ module.exports = function ({api ,models, Users, Threads, Currencies }) {
         threadID = String(threadID);
         if (userBanned.has(senderID)|| threadBanned.has(threadID) || allowInbox == ![] && senderID == threadID) return;
         
-        for (const [key, value] of events.entries()) {
+        for (const [key, value] of global.client.commands.entries()) {
+            if (value.handleEvent) {
+                try {
+                    const Obj = {
+                        api,
+                        event,
+                        models,
+                        Users,
+                        Threads,
+                        Currencies
+                    };
+                    value.handleEvent(Obj);
+                } catch (err) {
+                    // console.log(`Error in handleEvent for command ${key}:`, err);
+                }
+            }
+        }
+
+        const eventsMap = global.client.events;
+        for (const [key, value] of eventsMap.entries()) {
+            // Check if the module has a handleEvent function
+            const eventRun = eventsMap.get(key);
+            if (eventRun && eventRun.handleEvent) {
+                try {
+                    const Obj = {
+                        api,
+                        event,
+                        models,
+                        Users,
+                        Threads,
+                        Currencies
+                    };
+                    eventRun.handleEvent(Obj);
+                } catch (err) {
+                    // console.log(`Error in handleEvent for event ${key}:`, err);
+                }
+            }
+
             // Skip entries without valid eventType
             if (!value?.config?.eventType || !event.logMessageType) continue;
             
             if (value.config.eventType.indexOf(event.logMessageType) !== -1) {
-                const eventRun = events.get(key);
                 try {
-                    const Obj = {};
-                    Obj.api = api
-                    Obj.event = event
-                    Obj.models= models 
-                    Obj.Users= Users 
-                    Obj.Threads = Threads
-                    Obj.Currencies = Currencies 
+                    const Obj = {
+                        api,
+                        event,
+                        models,
+                        Users,
+                        Threads,
+                        Currencies
+                    };
                     eventRun.run(Obj);
                     if (DeveloperMode == !![]) 
                         logger(global.getText('handleEvent', 'executeEvent', time, eventRun.config.name, threadID, Date.now() - timeStart), '[ Event ]');

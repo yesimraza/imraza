@@ -18,25 +18,33 @@ module.exports.onLoad = function () {
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, logMessageType, author } = event;
-    // log:thread-icon is for emoji changes, log:thread-theme-id can also carry emoji in some FCA versions
-    if (logMessageType !== "log:thread-icon" && logMessageType !== "log:thread-theme-id") return;
+    const { threadID, logMessageType, author, logMessageData } = event;
+    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji"];
+    if (!validEvents.includes(logMessageType)) return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
         if (lockStatus[threadID] && lockStatus[threadID].emoji === true) {
             const botID = api.getCurrentUserID();
-            if (author === botID) return;
+            if (String(author) === String(botID)) return;
 
             const savedEmoji = lockStatus[threadID].emojiValue;
             if (savedEmoji) {
-                console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${savedEmoji}`);
                 api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group emoji is locked. Reverting change...", threadID);
-                return api.setThreadEmoji(savedEmoji, threadID);
+                
+                const callback = (err) => {
+                    if (err) console.log("Error reverting emoji:", err);
+                };
+
+                if (typeof api.setThreadEmoji === "function") {
+                    return api.setThreadEmoji(savedEmoji, threadID, callback);
+                } else if (typeof api.changeThreadEmoji === "function") {
+                    return api.changeThreadEmoji(savedEmoji, threadID, callback);
+                }
             }
         }
     } catch (e) {
-        console.log("Error in lockemoji handleEvent:", e);
+        // console.log("Error in lockemoji handleEvent:", e);
     }
 };
 
@@ -48,12 +56,16 @@ module.exports.run = async function ({ api, event, args }) {
     
     const status = args[0]?.toLowerCase();
     if (status === "on") {
-        const threadInfo = await api.getThreadInfo(threadID);
-        lockStatus[threadID].emoji = true;
-        lockStatus[threadID].emojiValue = threadInfo.emoji || threadInfo.threadEmoji || "👍";
-        fs.writeJsonSync(path, lockStatus);
-        
-        return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
+        try {
+            const threadInfo = await api.getThreadInfo(threadID);
+            lockStatus[threadID].emoji = true;
+            lockStatus[threadID].emojiValue = threadInfo.emoji || threadInfo.threadEmoji || "👍";
+            fs.writeJsonSync(path, lockStatus);
+            
+            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
+        } catch (e) {
+            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Error getting group info: ${e.message}`, threadID, messageID);
+        }
     } else if (status === "off") {
         lockStatus[threadID].emoji = false;
         fs.writeJsonSync(path, lockStatus);
