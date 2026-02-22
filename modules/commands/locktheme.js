@@ -3,7 +3,7 @@ const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "locktheme",
-    version: "1.0.1",
+    version: "1.0.2",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group theme",
@@ -17,10 +17,11 @@ module.exports.onLoad = function () {
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
 };
 
-module.exports.handleEvent = async function ({ api, event, Threads }) {
+module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, logMessageType, author, logMessageData, type } = event;
-    const validEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
-    if (!validEvents.includes(logMessageType) && type !== "change_thread_color" && event.type !== "change_thread_color") return;
+    const themeEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
+    
+    if (!themeEvents.includes(logMessageType) && type !== "change_thread_color") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -34,13 +35,12 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
                 const callback = (err) => {
                     if (err) console.log("Error reverting theme:", err);
                 };
-
-                if (typeof api.setThreadColor === "function") {
-                    await api.setThreadColor(savedTheme, threadID, callback);
-                } else if (typeof api.changeThreadColor === "function") {
+                
+                // Using the theme_id logic found in fca/src/changeThreadColor.js
+                if (typeof api.changeThreadColor === "function") {
                     await api.changeThreadColor(savedTheme, threadID, callback);
-                } else {
-                    api.changeThreadColor(savedTheme, threadID, callback);
+                } else if (typeof api.setThreadColor === "function") {
+                    await api.setThreadColor(savedTheme, threadID, callback);
                 }
             }
         }
@@ -59,9 +59,12 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         try {
             const threadInfo = await api.getThreadInfo(threadID);
-            const themeID = threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color;
+            // According to fca/src/getThreadInfo.js:
+            // themeTheme is the object, and we need the ID/Value for changeThreadColor
+            const themeID = (threadInfo.threadTheme && threadInfo.threadTheme.id) || threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color;
+            
             lockStatus[threadID].theme = true;
-            lockStatus[threadID].themeValue = String(themeID || "0").toLowerCase();
+            lockStatus[threadID].themeValue = String(themeID || "0");
             fs.writeJsonSync(path, lockStatus);
             
             return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock theme enabled! Current theme ID: ${lockStatus[threadID].themeValue}`, threadID, messageID);

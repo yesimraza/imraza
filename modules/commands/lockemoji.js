@@ -3,7 +3,7 @@ const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.config = {
     name: "lockemoji",
-    version: "1.0.1",
+    version: "1.0.2",
     hasPermssion: 1,
     credits: "Kashif Raza",
     description: "Lock group emoji",
@@ -17,10 +17,11 @@ module.exports.onLoad = function () {
     if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
 };
 
-module.exports.handleEvent = async function ({ api, event, Threads }) {
-    const { threadID, logMessageType, author, logMessageData, type } = event;
-    const validEvents = ["log:thread-icon", "log:thread-theme-id", "log:thread-emoji", "log:thread-icon-emoji", "log:thread-color", "change_thread_icon"];
-    if (!validEvents.includes(logMessageType) && type !== "change_thread_icon" && event.type !== "change_thread_icon") return;
+module.exports.handleEvent = async function ({ api, event }) {
+    const { threadID, logMessageType, author, type } = event;
+    const emojiEvents = ["log:thread-icon", "log:thread-emoji", "log:thread-icon-emoji", "change_thread_icon"];
+    
+    if (!emojiEvents.includes(logMessageType) && type !== "change_thread_icon") return;
 
     try {
         const lockStatus = fs.readJsonSync(path);
@@ -35,14 +36,10 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
                     if (err) console.log("Error reverting emoji:", err);
                 };
 
-                if (typeof api.setThreadEmoji === "function") {
-                    await api.setThreadEmoji(savedEmoji, threadID, callback);
-                } else if (typeof api.changeThreadEmoji === "function") {
+                if (typeof api.changeThreadEmoji === "function") {
                     await api.changeThreadEmoji(savedEmoji, threadID, callback);
-                } else if (typeof api.setTitleEmoji === "function") {
-                    await api.setTitleEmoji(savedEmoji, threadID, callback);
-                } else {
-                    api.changeThreadEmoji(savedEmoji, threadID, callback);
+                } else if (typeof api.setThreadEmoji === "function") {
+                    await api.setThreadEmoji(savedEmoji, threadID, callback);
                 }
             }
         }
@@ -61,7 +58,7 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         try {
             const threadInfo = await api.getThreadInfo(threadID);
-            const emoji = threadInfo.emoji || threadInfo.threadEmoji || "👍";
+            const emoji = threadInfo.emoji || "👍";
             lockStatus[threadID].emoji = true;
             lockStatus[threadID].emojiValue = emoji;
             fs.writeJsonSync(path, lockStatus);

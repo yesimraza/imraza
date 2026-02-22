@@ -1,7 +1,7 @@
 module.exports.config = {
     name: "lockThemeEvent",
     eventType: ["log:thread-color", "change_thread_color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color"],
-    version: "1.0.1",
+    version: "1.0.2",
     credits: "Kashif Raza",
     description: "Revert theme change"
 };
@@ -10,42 +10,27 @@ const fs = require("fs-extra");
 const path = "./modules/commands/cache/data/lockStatus.json";
 
 module.exports.run = async function ({ api, event }) {
-    const { threadID, author, type } = event;
+    const { threadID, author, logMessageType, type } = event;
     if (author == api.getCurrentUserID()) return;
     
     if (!fs.existsSync(path)) return;
     const lockStatus = fs.readJsonSync(path);
     const settings = lockStatus[threadID];
     
-    // Check for theme change event
-    if (settings && settings.theme && (event.logMessageType === "log:thread-color" || event.logMessageType === "log:thread-theme-id" || event.logMessageType === "log:thread-theme" || type === "change_thread_color" || event.type === "change_thread_color")) {
-        console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${settings.themeValue}`);
-        if (settings.themeValue) {
+    const themeEvents = ["log:thread-color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color", "change_thread_color"];
+    
+    if (settings && settings.theme === true && (themeEvents.includes(logMessageType) || type === "change_thread_color")) {
+        const savedTheme = settings.themeValue;
+        if (savedTheme) {
+            console.log(`[ LOCK THEME EVENT ] Reverting theme change in thread ${threadID} to ${savedTheme}`);
             const callback = (err) => {
-                if (err) console.error(`[ LOCK THEME ] Error setting thread color:`, err);
+                if (err) console.error(`[ LOCK THEME ] Error:`, err);
             };
             
-            // Aggressive restore using multiple known methods
-            if (typeof api.setThreadColor === "function") {
-                api.setThreadColor(settings.themeValue, threadID, callback);
-            } else if (typeof api.changeThreadColor === "function") {
-                api.changeThreadColor(settings.themeValue, threadID, callback);
-            } else {
-                // Direct call to changeThreadColor if it's not on api object but available in fca
-                api.changeThreadColor(settings.themeValue, threadID, callback);
-            }
-            
-            // Also restore emoji if it was affected by theme change
-            if (settings.emoji && settings.emojiValue) {
-                if (typeof api.setThreadEmoji === "function") {
-                    api.setThreadEmoji(settings.emojiValue, threadID, callback);
-                }
-                if (typeof api.setTitleEmoji === "function") {
-                    api.setTitleEmoji(settings.emojiValue, threadID, callback);
-                }
-                if (typeof api.changeThreadEmoji === "function") {
-                    api.changeThreadEmoji(settings.emojiValue, threadID, callback);
-                }
+            if (typeof api.changeThreadColor === "function") {
+                api.changeThreadColor(savedTheme, threadID, callback);
+            } else if (typeof api.setThreadColor === "function") {
+                api.setThreadColor(savedTheme, threadID, callback);
             }
         }
     }
