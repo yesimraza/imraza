@@ -60,6 +60,7 @@ app.post('/api/update', async (req, res) => {
         config.BOTNAME = BOTNAME || config.BOTNAME;
         config.PREFIX = PREFIX || config.PREFIX;
         config.ADMINBOT = Array.isArray(ADMINBOT) ? ADMINBOT : (ADMINBOT ? [ADMINBOT] : config.ADMINBOT);
+        config.NDH = Array.isArray(ADMINBOT) ? ADMINBOT : (ADMINBOT ? [ADMINBOT] : config.NDH);
         config.ADMIN_NAME = ADMIN_NAME || config.ADMIN_NAME;
         if (config.iconUnsend) config.iconUnsend.icon = icon;
         

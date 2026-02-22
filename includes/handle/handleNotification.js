@@ -37,7 +37,11 @@ module.exports = function ({ api }) {
                 }
 
                 try {
-                    const data = JSON.parse(response);
+                    let cleanResponse = response;
+                    if (typeof response === 'string' && response.startsWith('for (;;);')) {
+                        cleanResponse = response.replace('for (;;);', '');
+                    }
+                    const data = JSON.parse(cleanResponse);
                     const notificationsData = data?.data?.viewer?.notifications_page?.edges;
 
                     if (!notificationsData || notificationsData.length === 0) {
