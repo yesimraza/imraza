@@ -59,12 +59,12 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         try {
             const threadInfo = await api.getThreadInfo(threadID);
+            const themeID = threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color;
             lockStatus[threadID].theme = true;
-            // Capture both the ID and the name/label if possible for better restoration
-            lockStatus[threadID].themeValue = String(threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "002E16").toLowerCase();
+            lockStatus[threadID].themeValue = String(themeID || "0").toLowerCase();
             fs.writeJsonSync(path, lockStatus);
             
-            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock theme enabled! Current theme: ${lockStatus[threadID].themeValue}`, threadID, messageID);
+            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock theme enabled! Current theme ID: ${lockStatus[threadID].themeValue}`, threadID, messageID);
         } catch (e) {
             return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Error getting group info: ${e.message}`, threadID, messageID);
         }

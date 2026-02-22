@@ -61,8 +61,9 @@ module.exports.run = async function ({ api, event, args }) {
     if (status === "on") {
         try {
             const threadInfo = await api.getThreadInfo(threadID);
+            const emoji = threadInfo.emoji || threadInfo.threadEmoji || "👍";
             lockStatus[threadID].emoji = true;
-            lockStatus[threadID].emojiValue = threadInfo.emoji || threadInfo.threadEmoji || "👍";
+            lockStatus[threadID].emojiValue = emoji;
             fs.writeJsonSync(path, lockStatus);
             
             return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
