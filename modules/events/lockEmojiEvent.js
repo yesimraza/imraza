@@ -1,7 +1,7 @@
 module.exports.config = {
     name: "lockEmojiEvent",
-    eventType: ["log:thread-icon", "change_thread_icon"],
-    version: "1.0.0",
+    eventType: ["log:thread-icon", "change_thread_icon", "log:thread-emoji", "log:thread-icon-emoji"],
+    version: "1.0.1",
     credits: "Kashif Raza",
     description: "Revert emoji change"
 };

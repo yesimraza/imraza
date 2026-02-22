@@ -1,7 +1,7 @@
 module.exports.config = {
     name: "lockThemeEvent",
-    eventType: ["log:thread-color", "change_thread_color"],
-    version: "1.0.0",
+    eventType: ["log:thread-color", "change_thread_color", "log:thread-theme-id", "log:thread-theme", "log:thread-theme-color"],
+    version: "1.0.1",
     credits: "Kashif Raza",
     description: "Revert theme change"
 };
