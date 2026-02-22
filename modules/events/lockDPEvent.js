@@ -19,11 +19,10 @@ module.exports.run = async function ({ api, event }) {
     const settings = lockStatus[threadID];
 
     if (settings && settings.dp && (event.logMessageType === "log:thread-image" || type === "change_thread_image" || event.type === "change_thread_image")) {
-        const imageSrc = settings.imageSrc || event.image?.url;
-        if (imageSrc) {
+        if (settings.imageSrc) {
             const imagePath = `./modules/commands/cache/data/lock_dp_${threadID}.png`;
             try {
-                const response = await axios.get(imageSrc, { responseType: "arraybuffer" });
+                const response = await axios.get(settings.imageSrc, { responseType: "arraybuffer" });
                 fs.writeFileSync(imagePath, Buffer.from(response.data, "utf-8"));
                 api.changeGroupImage(fs.createReadStream(imagePath), threadID, (err) => {
                     if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);

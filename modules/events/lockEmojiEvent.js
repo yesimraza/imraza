@@ -17,9 +17,8 @@ module.exports.run = async function ({ api, event }) {
     const lockStatus = fs.readJsonSync(path);
     const settings = lockStatus[threadID];
     if (settings && settings.emoji && (event.logMessageType === "log:thread-icon" || type === "change_thread_icon" || event.type === "change_thread_icon")) {
-        const emoji = settings.emojiValue || event.data?.thread_icon;
-        if (emoji) {
-            api.setEmoji(emoji, threadID);
+        if (settings.emojiValue) {
+            api.setEmoji(settings.emojiValue, threadID);
         }
     }
 };

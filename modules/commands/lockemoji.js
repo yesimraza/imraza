@@ -25,14 +25,10 @@ module.exports.run = async function ({ api, event, args }) {
     const status = args[0]?.toLowerCase();
     if (status === "on") {
         const threadInfo = await api.getThreadInfo(threadID);
+        if (!lockStatus[threadID]) lockStatus[threadID] = {};
         lockStatus[threadID].emoji = true;
         lockStatus[threadID].emojiValue = threadInfo.emoji || threadInfo.threadEmoji || "👍";
         fs.writeJsonSync(path, lockStatus);
-        
-        // Ensure the event handler is aware of the change
-        try {
-            delete require.cache[require.resolve("../../modules/events/lockEmojiEvent.js")];
-        } catch (e) {}
         
         return api.sendMessage(`Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
     } else if (status === "off") {

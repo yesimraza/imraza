@@ -20,14 +20,10 @@ module.exports.run = async function ({ api, event, args }) {
     const status = args[0]?.toLowerCase();
     if (status === "on") {
         const threadInfo = await api.getThreadInfo(threadID);
+        if (!lockStatus[threadID]) lockStatus[threadID] = {};
         lockStatus[threadID].theme = true;
         lockStatus[threadID].themeValue = threadInfo.threadThemeID || threadInfo.themeID || threadInfo.color || "default";
         fs.writeJsonSync(path, lockStatus);
-        
-        // Ensure the event handler is aware of the change
-        try {
-            delete require.cache[require.resolve("../../modules/events/lockThemeEvent.js")];
-        } catch (e) {}
         
         return api.sendMessage(`Lock theme enabled! Current theme ID: ${lockStatus[threadID].themeValue}`, threadID, messageID);
     } else if (status === "off") {

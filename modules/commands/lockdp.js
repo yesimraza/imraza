@@ -20,6 +20,7 @@ module.exports.run = async function ({ api, event, args }) {
     const status = args[0]?.toLowerCase();
     if (status === "on") {
         const threadInfo = await api.getThreadInfo(threadID);
+        if (!lockStatus[threadID]) lockStatus[threadID] = {};
         lockStatus[threadID].dp = true;
         lockStatus[threadID].imageSrc = threadInfo.imageSrc;
         fs.writeJsonSync(path, lockStatus);
