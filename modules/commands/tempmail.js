@@ -38,12 +38,18 @@ module.exports.run = async function ({ api, event, args }) {
         if (typeof res.data.result === 'string' || !res.data.result || res.data.result.length === 0) {
            return api.sendMessage(res.data.message || "📭 Inbox is empty.", threadID, messageID);
         }
-        let msg = "📬 **Inbox Messages:**\n\n";
-        res.data.result.forEach((m, i) => {
-          msg += `${i+1}. From: ${m.senderName}\nSubject: ${m.subject}\nID: ${m.id}\n\n`;
-        });
-        msg += "Use '.tempmail msg [email] [id]' to read a message.";
-        return api.sendMessage(msg, threadID, messageID);
+        
+        for (const m of res.data.result) {
+          const msgRes = await axios.get(`https://api.princetechn.com/api/tempmail/message?apikey=${apikey}&email=${encodeURIComponent(email)}&messageid=${m.id}`);
+          let body = "No content";
+          if (msgRes.data.success && msgRes.data.result && msgRes.data.result.data) {
+            body = msgRes.data.result.data.html.replace(/<[^>]*>?/gm, '');
+          }
+          
+          const fullMsg = `📧 **From:** ${m.senderName} (${m.from})\n📝 **Subject:** ${m.subject || "No Subject"}\n\n━━━━━━━━━━━━━━━\n\n${body}`;
+          await api.sendMessage(fullMsg, threadID);
+        }
+        return;
       }
     } catch (e) {
       return api.sendMessage("❌ Error checking inbox.", threadID, messageID);

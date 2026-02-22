@@ -42,18 +42,10 @@ module.exports.run = async function ({ api, event, args }) {
     // Download image
     await downloadFile(attachment.url, tempPath);
 
-    // Upload to Imgur
-    imgur.setClientId(IMGUR_CLIENT_ID);
-    const upload = await imgur.uploadFile(tempPath);
-    const imageUrl = upload.link;
-
-    // Clean up temp file
-    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-
-    if (!imageUrl) throw new Error("Image upload to Imgur failed.");
-
-    // Call Nano-Banana AI API
-    const apiUrl = `https://api.kraza.qzz.io/imagecreator/nanobanana?imageUrl=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}`;
+    // Use a simpler approach without Imgur if it fails
+    // Instead of imgur, let's use the raw attachment URL if accessible by the API
+    // Or try a different host. But let's first fix the API call itself.
+    const apiUrl = `https://api.kraza.qzz.io/imagecreator/nanobanana?imageUrl=${encodeURIComponent(attachment.url)}&prompt=${encodeURIComponent(prompt)}`;
 
     const response = await axios.get(apiUrl, { timeout: 120000 });
 

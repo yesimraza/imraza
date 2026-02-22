@@ -74,14 +74,17 @@ async function chatWithAlexa(api, event, query) {
           const audioDownload = await axios.get(audioUrl, { responseType: 'arraybuffer' });
           await fs.writeFile(audioPath, Buffer.from(audioDownload.data));
           
-          return api.sendMessage({
-            body: aiText,
-            attachment: fs.createReadStream(audioPath)
-          }, threadID, () => {
-            setTimeout(() => {
-              if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
-            }, 5000);
-          }, messageID);
+          // Re-verify file and extension before sending
+          if (fs.existsSync(audioPath)) {
+            return api.sendMessage({
+              body: aiText,
+              attachment: fs.createReadStream(audioPath)
+            }, threadID, () => {
+              setTimeout(() => {
+                if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
+              }, 5000);
+            }, messageID);
+          }
         }
       }
       
