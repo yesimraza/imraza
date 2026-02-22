@@ -76,10 +76,15 @@ module.exports.run = async function ({ api, event, args }) {
       attempts++;
       
       const result = await checkTaskStatus(taskId, apiKey);
-      if (result && result.length > 0) {
-         // Some versions of API return nested structure
+      if (result && Array.isArray(result) && result.length > 0) {
          const data = result[0].data?.data?.[0] || result[0];
-         if (data.audioUrl) {
+         if (data && data.audioUrl) {
+            audioUrl = data.audioUrl;
+         }
+      } else if (result && typeof result === 'object') {
+         // Handle case where result is not an array but an object directly
+         const data = result.data?.data?.[0] || result;
+         if (data && data.audioUrl) {
             audioUrl = data.audioUrl;
          }
       }
