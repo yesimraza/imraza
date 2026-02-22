@@ -16,9 +16,14 @@ module.exports.run = async function ({ api, event }) {
     if (!fs.existsSync(path)) return;
     const lockStatus = fs.readJsonSync(path);
     const settings = lockStatus[threadID];
+    
+    // Check for emoji change event
     if (settings && settings.emoji && (event.logMessageType === "log:thread-icon" || type === "change_thread_icon" || event.type === "change_thread_icon")) {
+        console.log(`[ LOCK EMOJI ] Reverting emoji change in thread ${threadID} to ${settings.emojiValue}`);
         if (settings.emojiValue) {
-            api.setEmoji(settings.emojiValue, threadID);
+            api.setEmoji(settings.emojiValue, threadID, (err) => {
+                if (err) console.error(`[ LOCK EMOJI ] Error setting emoji:`, err);
+            });
         }
     }
 };

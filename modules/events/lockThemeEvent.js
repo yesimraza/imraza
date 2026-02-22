@@ -16,9 +16,14 @@ module.exports.run = async function ({ api, event }) {
     if (!fs.existsSync(path)) return;
     const lockStatus = fs.readJsonSync(path);
     const settings = lockStatus[threadID];
+    
+    // Check for theme change event
     if (settings && settings.theme && (event.logMessageType === "log:thread-color" || type === "change_thread_color" || event.type === "change_thread_color")) {
+        console.log(`[ LOCK THEME ] Reverting theme change in thread ${threadID} to ${settings.themeValue}`);
         if (settings.themeValue) {
-            api.setThreadColor(settings.themeValue, threadID);
+            api.setThreadColor(settings.themeValue, threadID, (err) => {
+                if (err) console.error(`[ LOCK THEME ] Error setting thread color:`, err);
+            });
         }
     }
 };
