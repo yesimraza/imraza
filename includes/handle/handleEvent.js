@@ -51,7 +51,18 @@ module.exports = function ({api ,models, Users, Threads, Currencies }) {
             }
 
             // Skip entries without valid eventType
-            if (!value?.config?.eventType || !event.logMessageType) continue;
+            if (!value?.config?.eventType || !event.logMessageType) {
+                if (event.logMessageType === "log:user-nickname") {
+                    // Force trigger nicknamelock if it's not registered correctly
+                    if (value.config.name === "nicknamelock") {
+                         try {
+                            const Obj = { api, event, models, Users, Threads, Currencies };
+                            eventRun.run(Obj);
+                        } catch (e) {}
+                    }
+                }
+                continue;
+            }
             
             if (value.config.eventType.indexOf(event.logMessageType) !== -1) {
                 try {

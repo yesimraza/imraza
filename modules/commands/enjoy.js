@@ -15,10 +15,10 @@ module.exports.config = {
 
 module.exports.run = async function({ api, args, Users, event}) {
 const { threadID, messageID, senderID, mentions } = event;
-var mention = Object.keys(mentions)[0];
+var mention = Object.keys(mentions)[0]; if (!mention) return api.sendMessage("Please tag someone!", threadID, messageID);
 setTimeout(() =>
 api.sendMessage({
- body:"Oye BaBe CoMe HeRe 😗" + mentions[mention] ,
+ body:"Oye BaBe CoMe HeRe 😗 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -34,7 +34,7 @@ var a = Math.floor(Math.random() * 7);
 if ( a==0 ) {
 setTimeout(() =>
 api.sendMessage({
- body:"Yeh DeKho BaBe Umumuaahhhhh 😘 ❤️" + mentions[mention] ,
+ body:"Yeh DeKho BaBe Umumuaahhhhh 😘 ❤️ " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -42,7 +42,7 @@ api.sendMessage({
 }, threadID), 15000)
 setTimeout(() =>
 api.sendMessage({
- body:"LiPPi PRr Umumuaahhhhh  😘 💋" + mentions[mention] ,
+ body:"LiPPi PRr Umumuaahhhhh  😘 💋 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -50,7 +50,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body:"JaNu Z0or Sy Hug 🤗🫂" + mentions[mention] ,
+ body:"JaNu Z0or Sy Hug 🤗🫂 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -58,7 +58,7 @@ api.sendMessage({
 }, threadID), 25000)
 setTimeout(() =>
 api.sendMessage({
- body: "Neck Prr BiTe Umumuaahhhhh 😘🙈🙈🙈"+ mentions[mention] ,
+ body: "Neck Prr BiTe Umumuaahhhhh 😘🙈🙈🙈 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -66,7 +66,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body: "Lips 👄 Prr BiTe Aah umumuaahhhhh 😘💋"+ mentions[mention] ,
+ body: "Lips 👄 Prr BiTe Aah umumuaahhhhh 😘💋 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -74,7 +74,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body: "Umumuaahhhhh Umumuaahhhhh 😘"+ mentions[mention] ,
+ body: "Umumuaahhhhh Umumuaahhhhh 😘 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -82,7 +82,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body:"JaNu KYa Huwa Hosh kRro Abhi T0o Start KiYa 😘😘😘" + mentions[mention] ,
+ body:"JaNu KYa Huwa Hosh kRro Abhi T0o Start KiYa 😘😘😘 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -90,7 +90,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body: " JaNu SuNo Naww Ab Kaha Bag Rhy 🤪☹️🙈"+ mentions[mention] ,
+ body: " JaNu SuNo Naww Ab Kaha Bag Rhy 🤪☹️🙈 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -98,7 +98,7 @@ api.sendMessage({
 }, threadID), 50000)
 setTimeout(() =>
 api.sendMessage({
- body: "Tum T0o Meko Pyal kRty Na 💋😘"+ mentions[mention] ,
+ body: "Tum T0o Meko Pyal kRty Na 💋😘 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -106,7 +106,7 @@ api.sendMessage({
 }, threadID), 55000)
 setTimeout(() =>
 api.sendMessage({
- body:"SHarMao MaT Blo Ilu Ilu 😘🤪🙉" + mentions[mention] ,
+ body:"SHarMao MaT Blo Ilu Ilu 😘🤪🙉 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -140,7 +140,7 @@ api.sendMessage({
 }, threadID), 15000)
 setTimeout(() =>
 api.sendMessage({
- body: "Yeh L0o LiPpi Kiss umumuaahhhhhhhh 💋😘"+ mentions[mention] ,
+ body: "Yeh L0o LiPpi Kiss umumuaahhhhhhhh 💋😘 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -148,7 +148,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body: " HaYe JaNu Ab Lag Rha Uh Ny Mri Schi Me Jan Le LeNi JaNu 🥵"+ mentions[mention] ,
+ body: " HaYe JaNu Ab Lag Rha Uh Ny Mri Schi Me Jan Le LeNi JaNu 🥵 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -164,7 +164,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body:"JaNu KYa Soch Rhy MeKo Sb Smjh Aa Rha 🙈🙉🙊" + mentions[mention] ,
+ body:"JaNu KYa Soch Rhy MeKo Sb Smjh Aa Rha 🙈🙉🙊 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -172,7 +172,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body: "😘💋😘💋"+ mentions[mention] ,
+ body: "😘💋😘💋 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -180,7 +180,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body: "JaNuuuu"+ mentions[mention] ,
+ body: "JaNuuuu "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -188,7 +188,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body:"Blo Na Sb Kyun SharMa Rhy 🤣" + mentions[mention] ,
+ body:"Blo Na Sb Kyun SharMa Rhy 🤣 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -198,7 +198,7 @@ api.sendMessage({
 if (a==2) {
 setTimeout(() =>
 api.sendMessage({
- body:"Tharaki JaNu 😜😜😜" + mentions[mention] ,
+ body:"Tharaki JaNu 😜😜😜 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -206,7 +206,7 @@ api.sendMessage({
 }, threadID), 10000)
 setTimeout(() =>
 api.sendMessage({
- body:"JaNu Akaly Me Ana Khushbu LaGa KRr 😜" + mentions[mention] ,
+ body:"JaNu Akaly Me Ana Khushbu LaGa KRr 😜 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -214,7 +214,7 @@ api.sendMessage({
 }, threadID), 15000)
 setTimeout(() =>
 api.sendMessage({
- body:"Umumuaahhhhh 😘" + mentions[mention] ,
+ body:"Umumuaahhhhh 😘 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -222,7 +222,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body: "JaNu ThanDy H0o Gye 🥺"+ mentions[mention] ,
+ body: "JaNu ThanDy H0o Gye 🥺 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -238,7 +238,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body: "😜"+ mentions[mention] ,
+ body: "😜 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -246,7 +246,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body:"😝" + mentions[mention] ,
+ body:"😝 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -254,7 +254,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body: "🤪 "+ mentions[mention] ,
+ body: "🤪  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -262,7 +262,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body: "😋 "+ mentions[mention] ,
+ body: "😋  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -270,7 +270,7 @@ api.sendMessage({
 }, threadID), 50000)
 setTimeout(() =>
 api.sendMessage({
- body:"🤤" + mentions[mention] ,
+ body:"🤤 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -280,7 +280,7 @@ api.sendMessage({
 if (a==3) {
 setTimeout(() =>
 api.sendMessage({
- body:"🤫" + mentions[mention] ,
+ body:"🤫 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -288,7 +288,7 @@ api.sendMessage({
 }, threadID), 10000)
 setTimeout(() =>
 api.sendMessage({
- body:"🤨" + mentions[mention] ,
+ body:"🤨 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -296,7 +296,7 @@ api.sendMessage({
 }, threadID), 15000)
 setTimeout(() =>
 api.sendMessage({
- body:"🤒" + mentions[mention] ,
+ body:"🤒 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -304,7 +304,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body: "JaNuuuu"+ mentions[mention] ,
+ body: "JaNuuuu "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -312,7 +312,7 @@ api.sendMessage({
 }, threadID), 25000)
 setTimeout(() =>
 api.sendMessage({
- body: "😝😝😝 "+ mentions[mention] ,
+ body: "😝😝😝  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -320,7 +320,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body: "🤞😎"+ mentions[mention] ,
+ body: "🤞😎 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -328,7 +328,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body:"😂😂😂" + mentions[mention] ,
+ body:"😂😂😂 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -336,7 +336,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body: "🐒 "+ mentions[mention] ,
+ body: "🐒  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -344,7 +344,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body: "🤭🤭🤭 "+ mentions[mention] ,
+ body: "🤭🤭🤭  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -362,7 +362,7 @@ api.sendMessage({
 if (a==4) {
 setTimeout(() =>
 api.sendMessage({
- body:"😋" + mentions[mention] ,
+ body:"😋 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -387,7 +387,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body: "JaNuuuuu "+ mentions[mention] ,
+ body: "JaNuuuuu  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -395,7 +395,7 @@ api.sendMessage({
 }, threadID), 25000)
 setTimeout(() =>
 api.sendMessage({
- body: "Main Jaun KYa  ☹️☹️☹️ "+ mentions[mention] ,
+ body: "Main Jaun KYa  ☹️☹️☹️  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -403,7 +403,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body: "i Really Ilu 🤏🏻 Sa ☹️ "+ mentions[mention] ,
+ body: "i Really Ilu 🤏🏻 Sa ☹️  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -411,7 +411,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body: "0o TharKi JaNu  😂. " + mentions[mention] ,
+ body: "0o TharKi JaNu  😂.  " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -419,7 +419,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body: "Axha ShoLy Naw☹️☹️☹️ "+ mentions[mention] ,
+ body: "Axha ShoLy Naw☹️☹️☹️  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -427,7 +427,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body: "DaKho KiTna Pyal kRti Hu 😘 "+ mentions[mention] ,
+ body: "DaKho KiTna Pyal kRti Hu 😘  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -435,7 +435,7 @@ api.sendMessage({
 }, threadID), 50000)
 setTimeout(() =>
 api.sendMessage({
- body:"🤭" + mentions[mention] ,
+ body:"🤭 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -445,7 +445,7 @@ api.sendMessage({
 if (a==5){
 setTimeout(() =>
 api.sendMessage({
- body:"Ilu 🙉" + mentions[mention] ,
+ body:"Ilu 🙉 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -453,7 +453,7 @@ api.sendMessage({
 }, threadID), 10000)
 setTimeout(() =>
 api.sendMessage({
- body:"JaNu Iluuu🙈" + mentions[mention] ,
+ body:"JaNu Iluuu🙈 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -461,7 +461,7 @@ api.sendMessage({
 }, threadID), 15000)
 setTimeout(() =>
 api.sendMessage({
- body:"Umumuaahhhhh 💋" + mentions[mention] ,
+ body:"Umumuaahhhhh 💋 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -469,7 +469,7 @@ api.sendMessage({
 }, threadID), 20000)
 setTimeout(() =>
 api.sendMessage({
- body: "Uuuuuuummmmmaaaaahhh JaNuu 😘😘 "+ mentions[mention] ,
+ body: "Uuuuuuummmmmaaaaahhh JaNuu 😘😘  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -477,7 +477,7 @@ api.sendMessage({
 }, threadID), 25000)
 setTimeout(() =>
 api.sendMessage({
- body: "😋 "+ mentions[mention] ,
+ body: "😋  "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -485,7 +485,7 @@ api.sendMessage({
 }, threadID), 30000)
 setTimeout(() =>
 api.sendMessage({
- body: "🐒"+ mentions[mention] ,
+ body: "🐒 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -493,7 +493,7 @@ api.sendMessage({
 }, threadID), 35000)
 setTimeout(() =>
 api.sendMessage({
- body:"BanDar😽💋" + mentions[mention] ,
+ body:"BanDar😽💋 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -501,7 +501,7 @@ api.sendMessage({
 }, threadID), 40000)
 setTimeout(() =>
 api.sendMessage({
- body: "Uummaahhh ❤️❤️"+ mentions[mention] ,
+ body: "Uummaahhh ❤️❤️ "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -509,7 +509,7 @@ api.sendMessage({
 }, threadID), 45000)
 setTimeout(() =>
 api.sendMessage({
- body: "IB Chal Aja Ab 💋❤️🤪"+ mentions[mention] ,
+ body: "IB Chal Aja Ab 💋❤️🤪 "+ mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention
@@ -517,7 +517,7 @@ api.sendMessage({
 }, threadID), 50000)
 setTimeout(() =>
 api.sendMessage({
- body:"MeKo SuNai Dy Rhi Uh Ki DarKen Yahan Tk Chal JaNu umumuaahhhhh  🤪❤️💋" + mentions[mention] ,
+ body:"MeKo SuNai Dy Rhi Uh Ki DarKen Yahan Tk Chal JaNu umumuaahhhhh  🤪❤️💋 " + mentions[mention] ,
  mentions: [{
   tag: mentions[mention],
   id: mention

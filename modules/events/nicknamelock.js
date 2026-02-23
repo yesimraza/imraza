@@ -7,7 +7,8 @@ module.exports.config = {
 };
 
 const fs = require("fs-extra");
-const path = path.join(__dirname, "../../includes/datajson/nicknameLock.json");
+const { join } = require("path");
+const path = join(__dirname, "../../includes/datajson/nicknameLock.json");
 
 module.exports.run = async function({ api, event, Users }) {
   const { threadID, author, logMessageType, logMessageData } = event;
@@ -23,6 +24,10 @@ module.exports.run = async function({ api, event, Users }) {
       }
     }
   }
+};
+
+module.exports.handleEvent = async function({ api, event, Users }) {
+    return module.exports.run({ api, event, Users });
 };
 
 module.exports.lock = async function({ api, event, args }) {

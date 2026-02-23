@@ -291,7 +291,7 @@ module.exports = function ({ api, models }) {
       }
       console.log(out);
       if ("BOX" in el) await api.setTitle(el["BOX"], el["TID"]);
-      api.sendMessage(out, el["TID"], () =>
+      api.sendMessage(out, el["TID"], (err) =>
         "ATTACHMENT" in el
           ? el.ATTACHMENT.forEach((a) =>
               fs.unlinkSync(
