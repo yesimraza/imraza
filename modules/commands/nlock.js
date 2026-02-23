@@ -2,7 +2,7 @@ module.exports.config = {
   name: "nlock",
   version: "1.0.0",
   permission: 1,
-  credits: "Agent",
+  credits: "Kashif Raza",
   description: "Lock or unlock nicknames",
   commandCategory: "Group",
   usages: "[lock/unlock] @tag",
