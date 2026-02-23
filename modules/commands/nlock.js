@@ -1,11 +1,11 @@
 module.exports.config = {
   name: "nlock",
-  version: "1.0.0",
-  permission: 1,
+  version: "1.0.1",
+  hasPermssion: 1,
   credits: "Kashif Raza",
-  description: "Lock or unlock nicknames",
+  description: "Lock/Unlock nicknames for users or all members",
   commandCategory: "Group",
-  usages: "[lock/unlock] @tag",
+  usages: "[lock/unlock] [@tag / all]",
   cooldowns: 5
 };
 

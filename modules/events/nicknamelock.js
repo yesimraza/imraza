@@ -31,13 +31,26 @@ module.exports.handleEvent = async function({ api, event, Users }) {
 };
 
 module.exports.lock = async function({ api, event, args }) {
-  const { threadID, messageID, mentions, senderID } = event;
+  const { threadID, messageID, mentions, senderID, participantIDs } = event;
   if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
   let data = fs.readJsonSync(path);
 
   if (args[0] === "lock") {
+    if (args[1] === "all") {
+      if (!data[threadID]) data[threadID] = {};
+      const threadInfo = await api.getThreadInfo(threadID);
+      const nicknames = threadInfo.nicknames;
+      
+      participantIDs.forEach(id => {
+        data[threadID][id] = nicknames[id] || "";
+      });
+      
+      fs.writeJsonSync(path, data);
+      return api.sendMessage("✅ Locked nicknames for all members in this group.", threadID, messageID);
+    }
+
     const mention = Object.keys(mentions);
-    if (mention.length === 0) return api.sendMessage("Please tag someone to lock their nickname.", threadID, messageID);
+    if (mention.length === 0) return api.sendMessage("⚠️ Please tag someone or use 'all' to lock nicknames.", threadID, messageID);
     
     if (!data[threadID]) data[threadID] = {};
     const threadInfo = await api.getThreadInfo(threadID);
@@ -48,12 +61,20 @@ module.exports.lock = async function({ api, event, args }) {
     });
     
     fs.writeJsonSync(path, data);
-    return api.sendMessage("Locked nicknames for tagged users.", threadID, messageID);
+    return api.sendMessage("✅ Locked nicknames for tagged users.", threadID, messageID);
   }
 
   if (args[0] === "unlock") {
+    if (args[1] === "all") {
+      if (data[threadID]) {
+        delete data[threadID];
+        fs.writeJsonSync(path, data);
+      }
+      return api.sendMessage("✅ Unlocked nicknames for all members in this group.", threadID, messageID);
+    }
+
     const mention = Object.keys(mentions);
-    if (mention.length === 0) return api.sendMessage("Please tag someone to unlock their nickname.", threadID, messageID);
+    if (mention.length === 0) return api.sendMessage("⚠️ Please tag someone or use 'all' to unlock nicknames.", threadID, messageID);
     
     if (data[threadID]) {
       mention.forEach(id => {
@@ -61,6 +82,6 @@ module.exports.lock = async function({ api, event, args }) {
       });
       fs.writeJsonSync(path, data);
     }
-    return api.sendMessage("Unlocked nicknames for tagged users.", threadID, messageID);
+    return api.sendMessage("✅ Unlocked nicknames for tagged users.", threadID, messageID);
   }
 };
