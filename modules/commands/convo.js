@@ -68,9 +68,9 @@ module.exports.run = async function({ api, args, event }) {
         const sendMsg = () => {
             let message = content[index];
             if (mentionID) {
-                message = `${message} @${mentionName}`;
+                const body = `@${mentionName} ${message}`;
                 api.sendMessage({
-                    body: message,
+                    body: body,
                     mentions: [{ tag: `@${mentionName}`, id: mentionID }]
                 }, threadID);
             } else {
