@@ -32,9 +32,17 @@ module.exports.run = async function({ api, args, event }) {
     }
 
     if (args[0] === "on") {
-        const seconds = parseInt(args[1]);
+        let seconds = parseInt(args[1]);
+        if (isNaN(seconds)) {
+            // Check if the user used |5| format
+            const match = args[1].match(/\|(\d+)\|/);
+            if (match) {
+                seconds = parseInt(match[1]);
+            }
+        }
+
         if (isNaN(seconds) || seconds <= 0) {
-            return api.sendMessage("❌ Please provide valid seconds. Usage: convo1 on |seconds| @mention", threadID, messageID);
+            return api.sendMessage("❌ Please provide valid seconds. Usage: convo1 on 5 @mention", threadID, messageID);
         }
 
         const filePath = path.join(__dirname, "convo", "1.txt");
