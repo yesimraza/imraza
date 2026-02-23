@@ -2646,9 +2646,10 @@ function parseAndCheckLogin(ctx, defaultFuncs, retryCount) {
             if (data.statusCode !== 200) {
                 if (data.statusCode === 404 || data.statusCode === 500) {
                     log.warn("parseAndCheckLogin", "Received " + data.statusCode + ". This might be a temporary Facebook limit. Retrying might work.");
-                    throw new Error("Received " + data.statusCode + " from Facebook. Body: " + data.body.substring(0, 100));
+                    // Return a rejected promise instead of throwing to be more idiomatic with bluebird
+                    return bluebird.reject(new Error("Received " + data.statusCode + " from Facebook. Body: " + data.body.substring(0, 100)));
                 } else {
-                    throw new Error("parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response.");
+                    return bluebird.reject(new Error("parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response."));
                 }
             }
 
