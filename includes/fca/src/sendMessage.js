@@ -152,6 +152,10 @@ module.exports = function (defaultFuncs, api, ctx) {
         return callback(null, messageInfo);
       })
       .catch(function (err) {
+        if (err && (err.statusCode === 404 || err.statusCode === 500)) {
+          log.warn("sendMessage", "Ignoring Facebook temporary error: " + err.statusCode);
+          return callback(null, { threadID: threadID, messageID: "temp_" + Date.now(), timestamp: Date.now() });
+        }
         log.error("sendMessage", err);
         if (utils.getType(err) == "Object" && err.error === "Not logged in.") ctx.loggedIn = false;
         return callback(err,null);
