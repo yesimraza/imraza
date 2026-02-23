@@ -18,10 +18,10 @@
     "FACEBOOK_ADMIN": "https://www.facebook.com/61588112703542",
     "PREFIX": ".",
     "ADMINBOT": [
-        "61588112703542"
+        "100065216344877"
     ],
     "NDH": [
-        "61588112703542"
+        "100065216344877"
     ],
     "DATABASE": {
         "sqlite": {
@@ -84,5 +84,5 @@
         "autoUnsend": "",
         "unsendMessageAfter": 5
     },
-    "ADMIN_NAME": "Raza"
+    "ADMIN_NAME": "Talha"
 }
