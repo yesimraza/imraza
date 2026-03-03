@@ -5,10 +5,10 @@ const fs = require('fs-extra');
 module.exports.config = {
     name: "news",
     version: "1.0.1",
-    permission: 0,
+    hasPermssion: 0,
     prefix: true,
     premium: false,
-    category: "group",
+    commandCategory: "group",
     credits: "RAZA",
     description: "Funny News",
     usages: "rank",

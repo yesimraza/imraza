@@ -9,7 +9,7 @@ module.exports.config = {
     hasPermssion: 0,
     credits: "RAZA",
     description: "fun",
-    category: "fun",
+    commandCategory: "fun",
     prefix: true,
     premium: false,
     cooldowns: 5,

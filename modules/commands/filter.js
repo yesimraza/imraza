@@ -4,7 +4,7 @@ module.exports.config = {
   hasPermssion: 1,
   credits: "Raza",
   description: "Filter members in the group",
-  category: "Group",
+  commandCategory: "Group",
   usages: "filter",
   cooldowns: 5
 };
@@ -16,8 +16,6 @@ module.exports.run = async function({ api, event }) {
         const { participantIDs } = threadInfo;
         let count = 0;
         for (const id of participantIDs) {
-            // This is a basic filter example, usually used to kick inactive members
-            // For now, it just counts them.
             count++;
         }
         api.sendMessage(`Group has ${count} members.`, threadID, messageID);

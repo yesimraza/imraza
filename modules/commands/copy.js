@@ -36,7 +36,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "RAZA",
   description: "📋 Copy a message (text + media) and save it",
-  category: "Utility",
+  commandCategory: "Utility",
   usages: "Reply to a message to copy it",
   cooldowns: 2,
   prefix: true,

@@ -5,11 +5,11 @@ const { loadImage, createCanvas } = require("canvas");
 module.exports.config = {
     name: "zuck",
     version: "1.0.1",
-    permission: 0,
+    hasPermssion: 0,
     prefix: true,
     credits: "Raza",
     premium:false,
-    category: "group",
+    commandCategory: "group",
     description: "Comment on the board ( ͡° ͜ʖ ͡°)",
     usages: "zuck [text]",
     cooldowns: 10,

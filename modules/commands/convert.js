@@ -4,7 +4,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "RAZA",
   description: "Convert video (mp4) to audio (mp3)",
-  category: "Utility",
+  commandCategory: "Utility",
   usages: "[reply to a video or provide URL]",
   cooldowns: 5,
   prefix: true,

@@ -4,7 +4,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "RAZA",
   description: "Pairing",
-  category: "group",
+  commandCategory: "group",
   prefix: true,
   premium: false,
   usages: "pair",

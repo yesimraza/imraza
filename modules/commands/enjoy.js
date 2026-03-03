@@ -1,10 +1,10 @@
 module.exports.config = {
   name: "enjoy",
   version: "1.0.2",
-  permission: 0,
+  hasPermssion: 0,
   prefix: true,
   premium:false,
-  category:"group",
+  commandCategory:"group",
   credits: "RAZA",
   description: "Tag 10 times continuously",
   usages: "Tharakpan",

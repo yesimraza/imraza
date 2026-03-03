@@ -13,7 +13,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "RazA",
   description: "📤 Paste the copied message into this thread",
-  category: "Utility",
+  commandCategory: "Utility",
   usages: "Use in any thread to paste last copied message",
   cooldowns: 2,
   prefix: true,

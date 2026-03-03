@@ -4,7 +4,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "Raza",
   description: "Funny Hack",
-  category: "Fun",
+  commandCategory: "Fun",
   usages: "hack @tag",
   cooldowns: 5
 };
