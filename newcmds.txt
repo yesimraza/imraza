@@ -1,0 +1,1222 @@
+
+
+
+
+
+const jimp = require('jimp');
+const request = require('node-superfetch');
+const fs = require('fs-extra');
+
+module.exports.config = {
+    name: "news",
+    version: "1.0.1",
+    permission: 0,
+    prefix: true,
+    premium: false,
+    category: "group",
+    credits: "RAZA",
+    description: "Funny News",
+    usages: "rank",
+    cooldowns: 5,
+    dependencies: {
+        "fs-extra": "",
+        "axios": "",
+        "canvas": "",
+        "jimp": "",
+        "node-superfetch": ""
+    }
+};
+
+module.exports.circle = async (image) => {
+    const jimp = require('jimp');
+    image = await jimp.read(image);
+    image.circle();
+    return await image.getBufferAsync(jimp.MIME_PNG);
+};
+
+module.exports.run = async ({ event, api, args, Users }) => {
+    try {
+        const id = Object.keys(event.mentions)[0] || event.senderID;
+        const path_toilet = __dirname + '/cache/toilet.png';
+
+        // Load background image
+        const bg = await jimp.read('https://i.ibb.co/xsRjhY1/20250113-025520.png');
+
+        // Get and process avatar
+        const { body: avatarBuffer } = await request.get(`https://graph.facebook.com/${id}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`);
+        let avatar = await jimp.read(avatarBuffer);
+        avatar.resize(470, 477);
+
+        // Composite avatar onto the background
+        bg.composite(avatar, 0, 107);
+
+        // Save the final image and send it
+        await bg.writeAsync(path_toilet);
+        api.sendMessage({ attachment: fs.createReadStream(path_toilet), body: "" }, event.threadID, () => fs.unlinkSync(path_toilet), event.messageID);
+    } catch (e) {
+        api.sendMessage(e.stack, event.threadID);
+    }
+};
+
+
+
+module.exports.config = {
+  name: "convert",
+  version: "1.0.0",
+  hasPermssion: 0,
+  credits: "RAZA",
+  description: "Convert video (mp4) to audio (mp3)",
+  category: "Utility",
+  usages: "[reply to a video or provide URL]",
+  cooldowns: 5,
+  prefix: true,
+  premium: false
+};
+
+module.exports.run = async function ({ api, args, event }) {
+  const axios = require("axios");
+  const fs = require("fs-extra");
+  const path = __dirname + "/cache/video_to_audio.mp3";
+
+  try {
+      let url;
+
+      // Check if user provided a URL or replied to a video
+      if (args[0]) {
+          url = args[0];
+      } else if (event.messageReply?.attachments[0]?.type === "video") {
+          url = event.messageReply.attachments[0].url;
+      } else {
+          return api.sendMessage("❌ Please reply to a video or provide a valid video URL.", event.threadID, event.messageID);
+      }
+
+      // Download the video and extract audio (save as .mp3)
+      const response = await axios.get(url, { responseType: "arraybuffer" });
+      fs.writeFileSync(path, Buffer.from(response.data, "utf-8"));
+
+      // Send the audio file back
+      const msg = {
+          body: "✅ Successfully converted video to audio (MP3)!",
+          attachment: fs.createReadStream(path)
+      };
+
+      api.sendMessage(msg, event.threadID, () => fs.unlinkSync(path), event.messageID);
+
+  } catch (error) {
+      console.error("CONVERT ERROR:", error);
+      return api.sendMessage("❌ An error occurred during conversion. Please try again.", event.threadID, event.messageID);
+  }
+};
+
+
+
+
+
+const fs = require("fs");
+const path = require("path");
+const axios = require("axios");
+
+const dataFolder = path.join(__dirname, "cache", "data");
+
+// Function to get user-specific file path
+const getUserJsonPath = (userID) => {
+  return path.join(dataFolder, `copiedMessage_${userID}.json`);
+};
+
+// Function to schedule cache cleanup after 1 hour
+const scheduleCacheCleanup = (userID, filePaths) => {
+  setTimeout(() => {
+    try {
+      const userJsonPath = getUserJsonPath(userID);
+      
+      // Delete user's copied message file
+      if (fs.existsSync(userJsonPath)) {
+        const data = JSON.parse(fs.readFileSync(userJsonPath, 'utf-8'));
+        
+        // Delete attachment files
+        data.attachments.forEach(attPath => {
+          if (fs.existsSync(attPath)) {
+            fs.unlinkSync(attPath);
+            console.log(`🗑️ Deleted cached attachment: ${attPath}`);
+          }
+        });
+        
+        // Delete the JSON file
+        fs.unlinkSync(userJsonPath);
+        console.log(`🗑️ Deleted user cache: ${userJsonPath}`);
+      }
+      
+      console.log(`🕐 Cache auto-cleanup completed for user ${userID} after 1 hour`);
+    } catch (error) {
+      console.error(`❌ Cache cleanup error for user ${userID}:`, error);
+    }
+  }, 3600000); // 1 hour = 3600000 milliseconds
+  
+  console.log(`⏰ Scheduled cache cleanup for user ${userID} in 1 hour`);
+};
+
+module.exports.config = {
+  name: "copy",
+  version: "1.0.1",
+  hasPermssion: 0,
+  credits: "RAZA",
+  description: "📋 Copy a message (text + media) and save it",
+  category: "🛠️ Utility",
+  usages: "Reply to a message to copy it",
+  cooldowns: 2,
+  prefix: true,
+  premium: false
+};
+
+module.exports.run = async function ({ api, event }) {
+  const { messageReply, threadID, senderID } = event;
+  const userJsonPath = getUserJsonPath(senderID);
+
+  if (!messageReply) {
+    return api.sendMessage("⚠️ | Please reply to a message to copy it.", threadID);
+  }
+
+  const { body, attachments } = messageReply;
+
+  // Ensure data directory exists
+  if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder, { recursive: true });
+
+  let savedData = {
+    body: body || '',
+    attachments: []
+  };
+
+  const downloadPromises = attachments.map(async (att, index) => {
+    const ext = att.type === "photo" ? ".jpg" :
+                att.type === "video" ? ".mp4" :
+                att.type === "audio" ? ".mp3" : "";
+    const filename = `copied_${senderID}_${Date.now()}_${index}${ext}`;
+    const filePath = path.join(dataFolder, filename);
+
+    const response = await axios.get(att.url, { responseType: "stream" });
+    const writer = fs.createWriteStream(filePath);
+    response.data.pipe(writer);
+
+    await new Promise((resolve, reject) => {
+      writer.on("finish", resolve);
+      writer.on("error", reject);
+    });
+
+    savedData.attachments.push(filePath);
+  });
+
+  await Promise.all(downloadPromises);
+
+  // Add timestamp and user info
+  savedData.timestamp = Date.now();
+  savedData.userID = senderID;
+  
+  fs.writeFileSync(userJsonPath, JSON.stringify(savedData, null, 2));
+  
+  // Schedule cleanup after 1 hour
+  scheduleCacheCleanup(senderID, savedData.attachments);
+
+  return api.sendMessage("✅ | Message copied and saved successfully! (Auto-delete in 1 hour)", threadID);
+};
+
+
+
+
+
+const fs = require("fs");
+const path = require("path");
+
+const dataFolder = path.join(__dirname, "cache", "data");
+
+// Function to get user-specific file path
+const getUserJsonPath = (userID) => {
+  return path.join(dataFolder, `copiedMessage_${userID}.json`);
+};
+
+module.exports.config = {
+  name: "paste",
+  version: "1.0.1",
+  hasPermssion: 0,
+  credits: "RazA",
+  description: "📤 Paste the copied message into this thread",
+  category: "🛠️ Utility",
+  usages: "Use in any thread to paste last copied message",
+  cooldowns: 2,
+  prefix: true,
+  premium: false
+};
+
+module.exports.run = async function ({ api, event }) {
+  const { threadID, senderID } = event;
+  const userJsonPath = getUserJsonPath(senderID);
+
+  if (!fs.existsSync(userJsonPath)) {
+    return api.sendMessage("❌ | No copied message found. Use `copy` first!", threadID);
+  }
+
+  const data = JSON.parse(fs.readFileSync(userJsonPath, "utf-8"));
+  
+  // Check if cache has expired (more than 1 hour)
+  if (data.timestamp && (Date.now() - data.timestamp) > 3600000) {
+    // Clean up expired cache
+    data.attachments.forEach(attPath => {
+      if (fs.existsSync(attPath)) {
+        fs.unlinkSync(attPath);
+      }
+    });
+    fs.unlinkSync(userJsonPath);
+    return api.sendMessage("❌ | Your copied message has expired (1 hour limit). Please copy again!", threadID);
+  }
+  const attachments = [];
+
+  for (const attPath of data.attachments) {
+    if (fs.existsSync(attPath)) {
+      attachments.push(fs.createReadStream(attPath));
+    }
+  }
+
+  const message = {};
+  if (data.body) message.body = data.body;
+  if (attachments.length > 0) message.attachment = attachments;
+
+  api.sendMessage(message, threadID);
+};
+
+
+
+
+
+module.exports.config = {
+  name: "enjoy",
+  version: "1.0.2",
+  permission: 0,
+  prefix: true,
+  premium:false,
+  category:"group",
+  credits: "RAZA",
+  description: "Tag 10 times continuously",
+  commandCategory: "Group",
+  usages: "Tharakpan",
+  cooldowns: 5,
+  dependencies: { }
+}
+
+module.exports.run = async function({ api, args, Users, event}) {
+const { threadID, messageID, senderID, mentions } = event;
+var mention = Object.keys(mentions)[0];
+setTimeout(() =>
+api.sendMessage({
+ body:"Oye BaBe CoMe HeRe 😗" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID, messageID), 3000)
+setTimeout(() =>
+api.sendMessage("Main Uh K0o BtaTai TraRak Kya HoTi  🥵🫂", threadID), 6000)
+
+setTimeout(() =>
+api.sendMessage("ChaLo Ab Main STarT kRrTi Hun ", threadID), 9000)
+
+var a = Math.floor(Math.random() * 7);
+if ( a==0 ) {
+setTimeout(() =>
+api.sendMessage({
+ body:"Yeh DeKho BaBe Umumuaahhhhh 😘 ❤️" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body:"LiPPi PRr Umumuaahhhhh  😘 💋" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu Z0or Sy Hug 🤗🫂" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Neck Prr BiTe Umumuaahhhhh 😘🙈🙈🙈"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Lips 👄 Prr BiTe Aah umumuaahhhhh 😘💋"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Umumuaahhhhh Umumuaahhhhh 😘"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu KYa Huwa Hosh kRro Abhi T0o Start KiYa 😘😘😘" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body: " JaNu SuNo Naww Ab Kaha Bag Rhy 🤪☹️🙈"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Tum T0o Meko Pyal kRty Na 💋😘"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 55000)
+setTimeout(() =>
+api.sendMessage({
+ body:"SHarMao MaT Blo Ilu Ilu 😘🤪🙉" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 60000)
+}
+setTimeout(() =>
+api.sendMessage({
+ body:"Hawn T0o JaNu ThaKi Kaha The Ham 🥵 " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 65000)
+if (a==1) {
+setTimeout(() =>
+api.sendMessage({
+ body:"Hawn JaNu 1 PaPpi Is GaL Pr 1 PaPpi Is Gal Prr umumuaahhhhh umumuaahhhhh 😘😘 " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 10000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu ShaRam Aa Rhi KYa 🤪 " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Yeh L0o LiPpi Kiss umumuaahhhhhhhh 💋😘"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body: " HaYe JaNu Ab Lag Rha Uh Ny Mri Schi Me Jan Le LeNi JaNu 🥵"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "👅 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu KYa Soch Rhy MeKo Sb Smjh Aa Rha 🙈🙉🙊" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body: "😘💋😘💋"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body: "JaNuuuu"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body:"Blo Na Sb Kyun SharMa Rhy 🤣" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+}
+if (a==2) {
+setTimeout(() =>
+api.sendMessage({
+ body:"Tharaki JaNu 😜😜😜" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 10000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu Akaly Me Ana Khushbu LaGa KRr 😜" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body:"Umumuaahhhhh 😘" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body: "JaNu ThanDy H0o Gye 🥺"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🤭 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body: "😜"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body:"😝" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🤪 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body: "😋 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+setTimeout(() =>
+api.sendMessage({
+ body:"🤤" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 60000)
+}
+if (a==3) {
+setTimeout(() =>
+api.sendMessage({
+ body:"🤫" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 10000)
+setTimeout(() =>
+api.sendMessage({
+ body:"🤨" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body:"🤒" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body: "JaNuuuu"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "😝😝😝 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🤞😎"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body:"😂😂😂" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🐒 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🤭🤭🤭 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+setTimeout(() =>
+api.sendMessage({
+ body:"Main Nhi RukNa JaNu " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 60000)
+}
+if (a==4) {
+setTimeout(() =>
+api.sendMessage({
+ body:"😋" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 10000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaMu MeKo Uh ITny Axhy LagTy Jse PaNi K0o AGG LagTi Hai 🤣🙊😂" +
+entionss[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body: "JaMu Umumuaahhhhh 🥰Blo Nawww ☹️ " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body: "JaNuuuuu "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Main Jaun KYa  ☹️☹️☹️ "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body: "i Really Ilu 🤏🏻 Sa ☹️ "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body: "0o TharKi JaNu  😂. " + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Axha ShoLy Naw☹️☹️☹️ "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body: "DaKho KiTna Pyal kRti Hu 😘 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+setTimeout(() =>
+api.sendMessage({
+ body:"🤭" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 60000)
+}
+if (a==5){
+setTimeout(() =>
+api.sendMessage({
+ body:"Ilu 🙉" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 10000)
+setTimeout(() =>
+api.sendMessage({
+ body:"JaNu Iluuu🙈" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 15000)
+setTimeout(() =>
+api.sendMessage({
+ body:"Umumuaahhhhh 💋" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 20000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Uuuuuuummmmmaaaaahhh JaNuu 😘😘 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 25000)
+setTimeout(() =>
+api.sendMessage({
+ body: "😋 "+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 30000)
+setTimeout(() =>
+api.sendMessage({
+ body: "🐒"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 35000)
+setTimeout(() =>
+api.sendMessage({
+ body:"BanDar😽💋" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 40000)
+setTimeout(() =>
+api.sendMessage({
+ body: "Uummaahhh ❤️❤️"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 45000)
+setTimeout(() =>
+api.sendMessage({
+ body: "IB Chal Aja Ab 💋❤️🤪"+ mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 50000)
+setTimeout(() =>
+api.sendMessage({
+ body:"MeKo SuNai Dy Rhi Uh Ki DarKen Yahan Tk Chal JaNu umumuaahhhhh  🤪❤️💋" + mentions[mention].replace("@", "") ,
+ mentions: [{
+  tag: mentions[mention].replace("@", ""),
+  id: mention
+ }]
+}, threadID), 60000)
+}
+}
+
+
+
+
+
+
+module.exports.config = {
+    name: "filter",
+    version: "2.0.0",
+    hasPermssion: 2,
+    credits: "RAZA",
+    description: "Remove fbuser",
+    category: "moderation",
+    prefix: true,
+    premium: false,
+    usages: "",
+    cooldowns: 10
+};
+
+module.exports.run = async function({ api, event }) {
+    const { userInfo, adminIDs } = await api.getThreadInfo(event.threadID);
+    let successCount = 0;
+    let failCount = 0;
+    let fbUsers = [];
+    
+    // Find users with undefined gender (Facebook users)
+    for (const user of userInfo) {
+        if (user.gender === undefined) {
+            fbUsers.push(user.id);
+        }
+    }
+    
+    // Check if bot is admin
+    const isBotAdmin = adminIDs.map(admin => admin.id).some(id => id == api.getCurrentUserID());
+    
+    if (fbUsers.length === 0) {
+        return api.sendMessage("In your group does not exist 'Facebook User'.", event.threadID);
+    }
+    
+    api.sendMessage(`Existing group of friends ${fbUsers.length} 'Facebook users'.`, event.threadID, function() {
+        if (isBotAdmin) {
+            return api.sendMessage("RocKet Launch 🚀", event.threadID, async function() {
+                for (const userId of fbUsers) {
+                    try {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await api.removeUserFromGroup(parseInt(userId), event.threadID);
+                        successCount++;
+                    } catch (error) {
+                        failCount++;
+                    }
+                }
+                
+                api.sendMessage(`Nyc MoVe \n${successCount} ✈️`, event.threadID, function() {
+                    if (failCount !== 0) {
+                        return api.sendMessage(`😜${failCount} 🤳`, event.threadID);
+                    }
+                });
+            });
+        } else {
+            return api.sendMessage("MaKe Me ADmin B0Ss 🤧", event.threadID);
+        }
+    });
+};
+
+
+
+
+
+module.exports.config = {
+  name: "hack",
+  version: "1.0.0",
+  permission: 0,
+  prefix: true,
+  premium:false,
+  category:"group",
+  credits: "RAZA",
+  description: "hack",
+  usages: "@mention",
+  dependencies: {
+        "axios": "",
+        "fs-extra": ""
+  },
+  cooldowns: 0
+};
+
+module.exports.wrapText = (ctx, name, maxWidth) => {
+  return new Promise(resolve => {
+    if (ctx.measureText(name).width < maxWidth) return resolve([name]);
+    if (ctx.measureText('W').width > maxWidth) return resolve(null);
+    const words = name.split(' ');
+    const lines = [];
+    let line = '';
+    while (words.length > 0) {
+      let split = false;
+      while (ctx.measureText(words[0]).width >= maxWidth) {
+        const temp = words[0];
+        words[0] = temp.slice(0, -1);
+        if (split) words[1] = `${temp.slice(-1)}${words[1]}`;
+        else {
+          split = true;
+          words.splice(1, 0, temp.slice(-1));
+        }
+      }
+      if (ctx.measureText(`${line}${words[0]}`).width < maxWidth) line += `${words.shift()} `;
+      else {
+        lines.push(line.trim());
+        line = '';
+      }
+      if (words.length === 0) lines.push(line.trim());
+    }
+    return resolve(lines);
+  });
+} 
+
+module.exports.run = async function ({ args, Users, Threads, api, event, Currencies }) {
+  const { loadImage, createCanvas } = require("canvas");
+  const fs = global.nodemodule["fs-extra"];
+  const axios = global.nodemodule["axios"];
+  let pathImg = __dirname + "/cache/background.png";
+  let pathAvt1 = __dirname + "/cache/Avtmot.png";
+
+
+  var id = Object.keys(event.mentions)[0] || event.senderID;
+  var name = await Users.getNameUser(id);
+  var ThreadInfo = await api.getThreadInfo(event.threadID);
+
+  var background = [
+
+    "https://i.ibb.co/47J5SLm/VQXViKI.png"
+];
+  var rd = background[Math.floor(Math.random() * background.length)];
+
+  let getAvtmot = (
+    await axios.get(
+      `https://graph.facebook.com/${id}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
+      { responseType: "arraybuffer" }
+    )
+  ).data;
+  fs.writeFileSync(pathAvt1, Buffer.from(getAvtmot, "utf-8"));
+
+  let getbackground = (
+    await axios.get(`${rd}`, {
+      responseType: "arraybuffer",
+    })
+  ).data;
+  fs.writeFileSync(pathImg, Buffer.from(getbackground, "utf-8"));
+
+  let baseImage = await loadImage(pathImg);
+  let baseAvt1 = await loadImage(pathAvt1);
+
+  let canvas = createCanvas(baseImage.width, baseImage.height);
+  let ctx = canvas.getContext("2d");
+  ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+    ctx.font = "400 23px Arial";
+    ctx.fillStyle = "#1878F3";
+    ctx.textAlign = "start";
+
+
+    const lines = await this.wrapText(ctx, name, 1160);
+    ctx.fillText(lines.join('\n'), 200,497);//comment
+    ctx.beginPath();
+
+
+  ctx.drawImage(baseAvt1, 83, 437, 100, 101);
+
+  const imageBuffer = canvas.toBuffer();
+  fs.writeFileSync(pathImg, imageBuffer);
+  fs.removeSync(pathAvt1);
+  return api.sendMessage({ body: `Good Luck Hacked Done Password Send To The Owner `, attachment: fs.createReadStream(pathImg) },
+      event.threadID,
+      () => fs.unlinkSync(pathImg),
+      event.messageID);
+    }
+    
+    
+    
+    
+
+
+module.exports.config = {
+  name: "pair",
+  version: "1.0.0", 
+  hasPermssion: 0,
+  credits: "Raza",
+  description: "Random Pair",
+  category: "fun",
+  prefix: true,
+  premium: false,
+  usages: "pair",
+  cooldowns: 10,
+  dependencies: {
+      "axios": "",
+      "fs-extra": "",
+      "path": "",
+      "jimp": ""
+  }
+};
+
+module.exports.run = async function({ api, event,Threads, Users }) {
+      const axios = global.nodemodule["axios"];
+      const fs = global.nodemodule["fs-extra"];
+
+      var { participantIDs } =(await Threads.getData(event.threadID)).threadInfo;
+      var tle = Math.floor(Math.random() * 101);
+      var namee = (await Users.getData(event.senderID)).name
+      const botID = api.getCurrentUserID();
+      const listUserID = event.participantIDs.filter(ID => ID != botID && ID != event.senderID);
+      var id = listUserID[Math.floor(Math.random() * listUserID.length)];
+      var name = (await Users.getData(id)).name
+      var arraytag = [];
+      const gifCute = ["https://i.pinimg.com/originals/42/9a/89/429a890a39e70d522d52c7e52bce8535.gif","https://i.pinimg.com/originals/9c/94/78/9c9478bb26b2160733ce0c10a0e10d10.gif","https://i.pinimg.com/originals/9d/0d/38/9d0d38c79b9fcf05f3ed71697039d27a.gif"];
+              arraytag.push({id: event.senderID, tag: namee});
+              arraytag.push({id: id, tag: name});
+
+
+      let Avatar = (await axios.get( `https://graph.facebook.com/${event.senderID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" } )).data; 
+          fs.writeFileSync( __dirname + "/cache/avt.png", Buffer.from(Avatar, "utf-8") );
+
+      let gifLove = (await axios.get(gifCute[Math.floor(Math.random() * gifCute.length)], { responseType: "arraybuffer" } )).data; 
+          fs.writeFileSync( __dirname + "/cache/giflove.png", Buffer.from(gifLove, "utf-8") );
+
+      let Avatar2 = (await axios.get( `https://graph.facebook.com/${id}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" } )).data;
+          fs.writeFileSync( __dirname + "/cache/avt2.png", Buffer.from(Avatar2, "utf-8") );
+
+      var imglove = [];
+
+            imglove.push(fs.createReadStream(__dirname + "/cache/avt.png"));
+            imglove.push(fs.createReadStream(__dirname + "/cache/giflove.png"));
+            imglove.push(fs.createReadStream(__dirname + "/cache/avt2.png"));
+
+      var msg = {body: `☆ 𝐌𝐞𝐊𝐨 𝐘𝐞 𝐁𝐞𝐬𝐓 𝐋𝐚𝐠𝐓𝐚 𝐇𝐚𝐢 ☆‎\n\n●●●━━━━━◥💜◤━━━━━●●●\n ✦${namee} 💓 ${name}✦\n●●●━━━━━◥💜◤━━━━━●●●\n\n➺ 💜: 〘 ${tle}% 〙 🙈🙉🙊 ❥||ㅎ\n`, mentions: arraytag, attachment: imglove}
+      return api.sendMessage(msg, event.threadID, event.messageID)
+}
+
+
+
+
+module.exports.config = {
+	name: "pair2",
+	version: "1.0.1",
+	hasPermssion: 0,
+	credits: "RAZA",
+	description: "fun",
+	category: "fun",
+	prefix: true,
+	premium: false,
+	cooldowns: 5,
+	dependencies: {
+        "axios": "",
+        "fs-extra": ""
+    }
+}
+
+module.exports.onLoad = async() => {
+    const { resolve } = global.nodemodule["path"];
+    const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
+    const { downloadFile } = global.utils;
+    const dirMaterial = __dirname + `/cache/canvas/`;
+    const path = resolve(__dirname, 'cache/canvas', 'pairing.png');
+    if (!existsSync(dirMaterial + "canvas")) mkdirSync(dirMaterial, { recursive: true });
+    if (!existsSync(path)) await downloadFile("https://i.postimg.cc/X7R3CLmb/267378493-3075346446127866-4722502659615516429-n.png", path);
+}
+
+async function makeImage({ one, two }) {
+    const fs = global.nodemodule["fs-extra"];
+    const path = global.nodemodule["path"];
+    const axios = global.nodemodule["axios"]; 
+    const jimp = global.nodemodule["jimp"];
+    const __root = path.resolve(__dirname, "cache", "canvas");
+
+    let pairing_img = await jimp.read(__root + "/pairing.png");
+    let pathImg = __root + `/pairing_${one}_${two}.png`;
+    let avatarOne = __root + `/avt_${one}.png`;
+    let avatarTwo = __root + `/avt_${two}.png`;
+
+    let getAvatarOne = (await axios.get(`https://graph.facebook.com/${one}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: 'arraybuffer' })).data;
+    fs.writeFileSync(avatarOne, Buffer.from(getAvatarOne, 'utf-8'));
+
+    let getAvatarTwo = (await axios.get(`https://graph.facebook.com/${two}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: 'arraybuffer' })).data;
+    fs.writeFileSync(avatarTwo, Buffer.from(getAvatarTwo, 'utf-8'));
+
+    let circleOne = await jimp.read(await circle(avatarOne));
+    let circleTwo = await jimp.read(await circle(avatarTwo));
+    pairing_img.composite(circleOne.resize(150, 150), 980, 200).composite(circleTwo.resize(150, 150), 140, 200);
+
+    let raw = await pairing_img.getBufferAsync("image/png");
+
+    fs.writeFileSync(pathImg, raw);
+    fs.unlinkSync(avatarOne);
+    fs.unlinkSync(avatarTwo);
+
+    return pathImg;
+}
+
+async function circle(image) {
+    const jimp = require("jimp");
+    image = await jimp.read(image);
+    image.circle();
+    return await image.getBufferAsync("image/png");
+}
+
+module.exports.run = async function({ api, event, args, Users, Threads, Currencies }) {
+    const axios = require("axios");
+    const fs = require("fs-extra");
+    const { threadID, messageID, senderID } = event;
+    var tl = ['21%', '67%', '19%', '37%', '17%', '96%', '52%', '62%', '76%', '83%', '100%', '99%', "0%", "48%"];
+    var tle = tl[Math.floor(Math.random() * tl.length)];
+    let dataa = await api.getUserInfo(event.senderID);
+    let namee = await dataa[event.senderID].name
+    let loz = await api.getThreadInfo(event.threadID);
+    var emoji = loz.participantIDs;
+    var id = emoji[Math.floor(Math.random() * emoji.length)];
+    let data = await api.getUserInfo(id);
+    let name = await data[id].name
+    var arraytag = [];
+    arraytag.push({id: event.senderID, tag: namee});
+    arraytag.push({id: id, tag: name});
+
+    var sex = await data[id].gender;
+    var gender = sex == 2 ? "Male🧑" : sex == 1 ? "Female👩‍" : "Unknown";
+    var one = senderID, two = id;
+    return makeImage({ one, two }).then(path => api.sendMessage({ body: `☆ 𝐌𝐞𝐊𝐨 𝐘𝐞 𝐁𝐞𝐬𝐓 𝐋𝐚𝐠𝐓𝐚 𝐇𝐚𝐢 ☆‎\n\n●●●━━━━━◥💜◤━━━━━●●●\n ✦${namee} 💓 ${name}✦\n●●●━━━━━◥💜◤━━━━━●●●\n\n➺ 💜: 　 ${tle} 🙈🙉🙊 ❥||ㅎ\n`, mentions: arraytag, attachment: fs.createReadStream(path) }, threadID, () => fs.unlinkSync(path), messageID));
+}
+
+
+
+
+module.exports.config = {
+
+	name: "zuck",
+	version: "1.0.1",
+	permission: 0,
+    prefix: true,
+    credits: "Raza",
+    premium:false,
+    category: "group",
+	description: "Comment on the board ( ͡° ͜ʖ ͡°)",
+	usages: "zuck [text]",
+	cooldowns: 10,
+	dependencies: {
+		"canvas":"",
+		 "axios":"",
+		 "fs-extra":""
+	}
+};
+
+module.exports.wrapText = (ctx, text, maxWidth) => {
+	return new Promise(resolve => {
+		if (ctx.measureText(text).width < maxWidth) return resolve([text]);
+		if (ctx.measureText('W').width > maxWidth) return resolve(null);
+		const words = text.split(' ');
+		const lines = [];
+		let line = '';
+		while (words.length > 0) {
+			let split = false;
+			while (ctx.measureText(words[0]).width >= maxWidth) {
+				const temp = words[0];
+				words[0] = temp.slice(0, -1);
+				if (split) words[1] = `${temp.slice(-1)}${words[1]}`;
+				else {
+					split = true;
+					words.splice(1, 0, temp.slice(-1));
+				}
+			}
+			if (ctx.measureText(`${line}${words[0]}`).width < maxWidth) line += `${words.shift()} `;
+			else {
+				lines.push(line.trim());
+				line = '';
+			}
+			if (words.length === 0) lines.push(line.trim());
+		}
+		return resolve(lines);
+	});
+} 
+
+module.exports.run = async function({ api, event, args }) {
+	let { senderID, threadID, messageID } = event;
+	const { loadImage, createCanvas } = require("canvas");
+	const fs = global.nodemodule["fs-extra"];
+	const axios = global.nodemodule["axios"];
+	let pathImg = __dirname + '/cache/trump.png';
+	var text = args.join(" ");
+	if (!text) return api.sendMessage("Enter the content of the comment on the board", threadID, messageID);
+	let getPorn = (await axios.get(`https://i.postimg.cc/gJCXgKv4/zucc.jpg`, { responseType: 'arraybuffer' })).data;
+	fs.writeFileSync(pathImg, Buffer.from(getPorn, 'utf-8'));
+	let baseImage = await loadImage(pathImg);
+	let canvas = createCanvas(baseImage.width, baseImage.height);
+	let ctx = canvas.getContext("2d");
+	ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+	ctx.font = "400 18px Arial";
+	ctx.fillStyle = "#000000";
+	ctx.textAlign = "start";
+	let fontSize = 50;
+	while (ctx.measureText(text).width > 1200) {
+		fontSize--;
+		ctx.font = `400 ${fontSize}px Arial`;
+	}
+	const lines = await this.wrapText(ctx, text, 470);
+	ctx.fillText(lines.join('\n'), 15,75);//comment
+	ctx.beginPath();
+	const imageBuffer = canvas.toBuffer();
+	fs.writeFileSync(pathImg, imageBuffer);
+return api.sendMessage({ attachment: fs.createReadStream(pathImg) }, threadID, () => fs.unlinkSync(pathImg), messageID);        
+}
+
+
+
